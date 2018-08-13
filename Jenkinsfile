@@ -4,7 +4,7 @@ repository= 'area51/'
 //repository=''
 
 // image prefix
-imagePrefix = 'nre-feeds'
+imagePrefix = 'uktransport'
 
 // The git repo / package prefix
 gitRepoPrefix = 'github.com/peter-mount/nre-feeds/'
