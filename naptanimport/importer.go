@@ -10,6 +10,7 @@ func (a *NaptanImport) importData() error {
 
   lookup := map[string]func(io.ReadCloser) error {
     "RailReferences.csv": a.railRef,
+    "Stops.csv": a.stops,
   }
 
   r, err := zip.OpenReader( a.zipFile() )
