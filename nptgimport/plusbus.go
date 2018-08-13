@@ -24,6 +24,7 @@ func (a *NptgImport) plusBusMapping( r io.ReadCloser ) error {
     log.Println( "Deleted", ra )
 
     lc := 0
+    ic := 0
     code := ""
     var crec []string
     var coords []string
@@ -45,6 +46,7 @@ func (a *NptgImport) plusBusMapping( r io.ReadCloser ) error {
             if err != nil {
               return err
             }
+            ic++
           }
 
           coords = nil
@@ -61,7 +63,10 @@ func (a *NptgImport) plusBusMapping( r io.ReadCloser ) error {
       if err != nil {
         return err
       }
+      ic++
     }
+
+    log.Println( "Inserted", ic )
 
     return nil
   } )
@@ -89,14 +94,10 @@ func plusBusMapping_persist( tx *sql.Tx, rec []string, coords []string ) error {
     "ST_MakePolygon(ST_GeomFromText('LINESTRING(" + strings.Join( coords, "," ) + ")', 27700))" +
     ")"
 
-  result, err := tx.Exec( sql )
+  _, err := tx.Exec( sql )
   if err != nil {
     return err
   }
-  ra, err := result.RowsAffected()
-  if err != nil {
-    return err
-  }
-  log.Println( rec[0], ra )
+
   return nil
 }
