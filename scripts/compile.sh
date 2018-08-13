@@ -9,6 +9,7 @@ BIN_DIR=${DEST}/bin/
 mkdir -p ${BIN_DIR}
 
 for bin in \
+  naptanimport \
   nptgimport
 do
   echo "Building ${bin}"

@@ -83,18 +83,14 @@ func plusBusMapping_persist( tx *sql.Tx, rec []string, coords []string ) error {
     coords = append( coords, coords[0] )
   }
 
-  sql := "INSERT INTO nptg.plusbus VALUES ('" +
-    rec[0] + "'," +
-    "NULL," +
-    "NULL,'" +
-    rec[5] + "','" +
-    rec[6] + "','" +
-    rec[7] + "','" +
-    rec[8] + "'," +
-    "ST_MakePolygon(ST_GeomFromText('LINESTRING(" + strings.Join( coords, "," ) + ")', 27700))" +
-    ")"
-
-  _, err := tx.Exec( sql )
+  _, err := tx.Exec( "INSERT INTO nptg.plusbus VALUES ($1,NULL,NULL,$2,$3,$4,$5,ST_MakePolygon(ST_GeomFromText('LINESTRING($6)', 27700))",
+    rec[0],
+    rec[5],
+    rec[6],
+    rec[7],
+    rec[8],
+    strings.Join( coords, "," ),
+  )
   if err != nil {
     return err
   }
