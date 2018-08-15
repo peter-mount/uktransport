@@ -2,6 +2,8 @@ package lib
 
 import (
   "archive/zip"
+  "flag"
+  "github.com/peter-mount/golib/kernel"
   "io"
   "log"
 )
@@ -13,35 +15,47 @@ type ZipImportHandlerMap map[string]ZipImportHandler
 
 // ZipImporter handles the import of a zipFile
 type ZipImporter struct {
-  handlers ZipImportHandlerMap
+  name      string
+  dir       string
+  handlers  ZipImportHandlerMap
+  zipfile  *string
 }
 
-func NewZipImporter( handlers ZipImportHandlerMap ) *ZipImporter {
-  return &ZipImporter{ handlers: handlers }
+func NewZipImporter( name string, handlers ZipImportHandlerMap ) *ZipImporter {
+  return &ZipImporter{ name: name, handlers: handlers }
+}
+
+func (a *ZipImporter) Name() string {
+  return "ZipImporter:" + a.name
+}
+
+func (a *ZipImporter) Init( k *kernel.Kernel ) error {
+  a.zipfile = flag.String( "import-zip-file", "", "Import just one file within the source zip file" )
+  return nil
+}
+
+func (z *ZipImporter) SetDir( dir string ) {
+  z.dir = dir
 }
 
 // ImportZipFile scans a zip file and if an entry in a map exists for the filename
 // will pass that to the handler
-func (z *ZipImporter) ImportZipFile( fileName string ) error {
+func (z *ZipImporter) Import() error {
 
-  r, err := zip.OpenReader( fileName )
+  r, err := zip.OpenReader( z.dir + z.name )
   if err != nil {
       return err
   }
   defer r.Close()
 
-  return z.ImportZipReader( r )
-}
-
-// ImportZipReader scans a zip file and if an entry in a map exists for the filename
-// will pass that to the handler
-func (z *ZipImporter) ImportZipReader( r *zip.ReadCloser ) error {
-
   for _, f := range r.File {
     if fh, ok := z.handlers[f.Name]; ok {
-      err := z.importZipFile( f, fh )
-      if err != nil {
-        return err
+      // If no filter or asking for a specific one
+      if *z.zipfile == "" || *z.zipfile == f.Name {
+        err := z.importZipFile( f, fh )
+        if err != nil {
+          return err
+        }
       }
     }
   }
