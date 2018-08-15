@@ -79,3 +79,19 @@ CREATE TABLE naptan.stops (
 -- geometry
 SELECT addgeometrycolumn( '', 'naptan', 'stops', 'geom', 27700, 'POINT', 2, true);
 CREATE INDEX stops_geom ON naptan.stops USING GIST (geom);
+
+-- ================================================================================
+-- stopplusbuszones - links naptan.stops with nptg.plusbus to allow us to filter
+-- stops within a specific plusbus zone
+-- ================================================================================
+DROP TABLE IF EXISTS naptan.stopplusbuszones;
+
+-- Note no references here as we may not have the entries present
+CREATE TABLE naptan.stopplusbuszones (
+  atco  NAME NOT NULL,
+  zone  NAME NOT NULL,
+  PRIMARY KEY (atco, zone)
+);
+
+CREATE INDEX stopplusbuszones_atco ON naptan.stopplusbuszones(atco);
+CREATE INDEX stopplusbuszones_zone ON naptan.stopplusbuszones(zone);

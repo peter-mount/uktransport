@@ -47,6 +47,7 @@ func (a *NaptanImport) Init( k *kernel.Kernel ) error {
     lib.ZipImportHandlerMap{
       "RailReferences.csv": a.railRef,
       "Stops.csv": a.stops,
+      "StopPlusbusZones.csv": a.stopPlusbusZones,
     } ) )
   if err != nil {
     return err
