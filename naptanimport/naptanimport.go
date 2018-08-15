@@ -16,6 +16,7 @@ type NaptanImport struct {
 
   // The DB
   db           *db.DBService
+  sql          *lib.SqlService
 }
 
 func (a *NaptanImport) Name() string {
@@ -32,6 +33,12 @@ func (a *NaptanImport) Init( k *kernel.Kernel ) error {
     return err
   }
   a.db = (dbservice).(*db.DBService)
+
+  sqlservice, err := k.AddService( &lib.SqlService{} )
+  if err != nil {
+    return err
+  }
+  a.sql = (sqlservice).(*lib.SqlService)
 
   return nil
 }
@@ -60,7 +67,8 @@ func (a *NaptanImport) Run() error {
     }
   }
 
-  if *a.retrieve || *a.importdata {
+  // A retrieve, forced import or the schema being Installed then import the zip
+  if *a.retrieve || *a.importdata || a.sql.Installed() {
     zipImporter := lib.NewZipImporter( lib.ZipImportHandlerMap{
       "RailReferences.csv": a.railRef,
       "Stops.csv": a.stops,

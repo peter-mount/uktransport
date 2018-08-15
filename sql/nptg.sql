@@ -2,11 +2,11 @@
 -- nptg schema
 -- ================================================================================
 
-CREATE EXTENSION postgis;
+CREATE EXTENSION IF NOT EXISTS postgis;
 
-CREATE SCHEMA nptg;
+CREATE SCHEMA IF NOT EXISTS nptg;
 
-DROP TABLE nptg.plusbus;
+DROP TABLE IF EXISTS nptg.plusbus;
 
 CREATE TABLE nptg.plusbus (
   zone          NAME NOT NULL,

@@ -27,6 +27,10 @@ RUN apk add --no-cache \
 # Our build scripts
 ADD scripts/ /usr/local/bin/
 
+# go-bindata
+RUN go get -v github.com/kevinburke/go-bindata &&\
+    go build -o /usr/local/bin/go-bindata github.com/kevinburke/go-bindata/go-bindata
+
 # Ensure we have the libraries - docker will cache these between builds
 RUN get.sh
 
@@ -36,6 +40,9 @@ RUN get.sh
 FROM build as source
 WORKDIR /go/src/github.com/peter-mount/uktransport
 ADD . .
+
+# Import sql so we can build as needed
+RUN go-bindata -o lib/sqlassets.go -pkg lib sql/
 
 # ============================================================
 # Compile the source.

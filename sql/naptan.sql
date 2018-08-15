@@ -2,14 +2,14 @@
 -- naptan
 -- ================================================================================
 
-CREATE EXTENSION postgis;
+CREATE EXTENSION IF NOT EXISTS postgis;
 
-CREATE SCHEMA naptan;
+CREATE SCHEMA IF NOT EXISTS naptan;
 
 -- ================================================================================
 -- railreference
 -- ================================================================================
-DROP TABLE naptan.rail;
+DROP TABLE IF EXISTS naptan.rail;
 
 CREATE TABLE naptan.rail (
   atco          NAME NOT NULL,
@@ -35,7 +35,7 @@ CREATE INDEX rail_geom ON naptan.rail USING GIST (geom);
 -- ================================================================================
 -- stops
 -- ================================================================================
-DROP TABLE naptan.stops;
+DROP TABLE IF EXISTS naptan.stops;
 
 CREATE TABLE naptan.stops (
   atco                    NAME NOT NULL,

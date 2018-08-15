@@ -16,6 +16,7 @@ type NptgImport struct {
 
   // The DB
   db           *db.DBService
+  sql          *lib.SqlService
 }
 
 func (a *NptgImport) Name() string {
@@ -32,6 +33,13 @@ func (a *NptgImport) Init( k *kernel.Kernel ) error {
     return err
   }
   a.db = (dbservice).(*db.DBService)
+
+  sqlservice, err := k.AddService( &lib.SqlService{} )
+  if err != nil {
+    return err
+  }
+  a.sql = (sqlservice).(*lib.SqlService)
+  a.sql.Schema = "nptg"
 
   return nil
 }
@@ -60,7 +68,8 @@ func (a *NptgImport) Run() error {
     }
   }
 
-  if *a.retrieve || *a.importdata {
+  // A retrieve, forced import or the schema being Installed then import the zip
+  if *a.retrieve || *a.importdata || a.sql.Installed() {
     zipImporter := lib.NewZipImporter( lib.ZipImportHandlerMap{
       "PlusbusMapping.csv": a.plusBusMapping,
     } )
