@@ -9,7 +9,7 @@ CREATE SCHEMA IF NOT EXISTS nptg;
 -- ================================================================================
 -- plusbus consists of a polygon for each Plusbus zone
 -- ================================================================================
-DROP TABLE IF EXISTS nptg.plusbus;
+DROP TABLE IF EXISTS nptg.plusbus CASCADE;
 
 CREATE TABLE nptg.plusbus (
   zone          NAME NOT NULL,
@@ -27,7 +27,7 @@ CREATE INDEX plusbus_geom ON nptg.plusbus USING GIST (geom);
 -- ================================================================================
 -- plusbuszone Holds the metadata for a Plusbus zone
 -- ================================================================================
-DROP TABLE IF EXISTS nptg.plusbuszone;
+DROP TABLE IF EXISTS nptg.plusbuszone CASCADE;
 
 CREATE TABLE nptg.plusbuszone (
   zone          NAME NOT NULL,
@@ -47,6 +47,6 @@ CREATE TABLE nptg.plusbuszone (
 -- This view inherits the geometry from naptan.rail so can be used as a Point feature
 -- ================================================================================
 CREATE VIEW nptg.railplusbus
-  AS SELECT z.zone, r.*
+  AS SELECT z.zone AS plusbuszone, r.*
     FROM naptan.rail r
       INNER JOIN nptg.plusbus z ON ST_Contains( z.geom, r.geom );

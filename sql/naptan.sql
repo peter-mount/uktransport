@@ -9,7 +9,7 @@ CREATE SCHEMA IF NOT EXISTS naptan;
 -- ================================================================================
 -- railreference
 -- ================================================================================
-DROP TABLE IF EXISTS naptan.rail;
+DROP TABLE IF EXISTS naptan.rail CASCADE;
 
 CREATE TABLE naptan.rail (
   atco          NAME NOT NULL,
@@ -83,7 +83,7 @@ CREATE INDEX stops_geom ON naptan.stops USING GIST (geom);
 -- stopplusbuszones - links naptan.stops with nptg.plusbus to allow us to filter
 -- stops within a specific plusbus zone
 -- ================================================================================
-DROP TABLE IF EXISTS naptan.stopplusbuszones;
+DROP TABLE IF EXISTS naptan.stopplusbuszones CASCADE;
 
 -- Note no references here as we may not have the entries present
 CREATE TABLE naptan.stopplusbuszones (
@@ -100,6 +100,6 @@ CREATE INDEX stopplusbuszones_zone ON naptan.stopplusbuszones(zone);
 -- As this gets it's geometry from stops it can be used as a point feature
 -- ================================================================================
 CREATE VIEW naptan.plusbusstops
-  AS SELECT z.zone, s.*
+  AS SELECT z.zone AS plusbuszone, s.*
     FROM naptan.stops s
     INNER JOIN naptan.stopplusbuszones z ON s.atco = z.atco;
