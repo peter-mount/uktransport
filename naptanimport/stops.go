@@ -33,7 +33,7 @@ func (a *NaptanImport) stops( r io.ReadCloser ) error {
       return err
     }
 
-    tx.OnCommitCluster( "naptan.stops", "geom" )
+    tx.OnCommitCluster( "naptan.stops", "stops_geom" )
 
     _, err = tx.DeleteFrom( "naptan.stops" )
     if err != nil {

@@ -21,7 +21,7 @@ func (a *NptgImport) plusBusMapping( r io.ReadCloser ) error {
     }
     defer stmt.Close()
 
-    tx.OnCommitCluster( "nptg.plusbus", "geom" )
+    tx.OnCommitCluster( "nptg.plusbus", "plusbus_geom" )
 
     _, err = tx.DeleteFrom( "nptg.plusbus" )
     if err != nil {

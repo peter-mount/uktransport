@@ -14,7 +14,7 @@ func (a *NaptanImport) railRef( r io.ReadCloser ) error {
       return err
     }
 
-    tx.OnCommitCluster( "naptan.rail", "geom" )
+    tx.OnCommitCluster( "naptan.rail", "rail_geom" )
 
     _, err = tx.DeleteFrom( "naptan.rail" )
     if err != nil {
