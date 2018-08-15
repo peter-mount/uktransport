@@ -27,7 +27,6 @@ CREATE INDEX rail_t ON naptan.rail(tiploc);
 CREATE INDEX rail_c ON naptan.rail(crs);
 CREATE INDEX rail_n ON naptan.rail(lower(name));
 
-
 -- geometry
 SELECT addgeometrycolumn( '', 'naptan', 'rail', 'geom', 27700, 'POINT', 2, true);
 CREATE INDEX rail_geom ON naptan.rail USING GIST (geom);

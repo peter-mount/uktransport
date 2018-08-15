@@ -40,3 +40,13 @@ CREATE TABLE nptg.plusbuszone (
   modification  NAME,
   PRIMARY KEY (zone)
 );
+
+-- ================================================================================
+-- railplusbus is a view of naptan.rail that is contained within a plusbus zone
+-- Specifically this means rail stations within each zone.
+-- This view inherits the geometry from naptan.rail so can be used as a Point feature
+-- ================================================================================
+CREATE VIEW nptg.railplusbus
+  AS SELECT z.zone, r.*
+    FROM naptan.rail r
+      INNER JOIN nptg.plusbus z ON ST_Contains( z.geom, r.geom );
