@@ -1,8 +1,8 @@
 package naptanimport
 
 import(
-  "database/sql"
   "encoding/csv"
+  "github.com/peter-mount/golib/kernel/db"
   "io"
   "log"
 )
@@ -15,22 +15,30 @@ func nullIfEmpty( s string ) *string {
 }
 
 func (a *NaptanImport) stops( r io.ReadCloser ) error {
-  err := a.Update( func( tx *sql.Tx ) error {
+  err := a.db.Update( func( tx *db.Tx ) error {
+    stmt, err := tx.Prepare(
+      "INSERT INTO naptan.stops VALUES (" +
+      " $1, $2, $3, $4, $5, $6, $7, $8, $9,$10," +
+      "$11,$12,$13,$14,$15,$16,$17,$18,$19,$20," +
+      "$21,$22,$23,$24,$25,$26,$27,$28,$29,$30," +
+      "$31,$32," +
+      "ST_SetSRID(ST_MakePoint($33,$34), 27700))" )
+    if err != nil {
+     return err
+    }
+
     // Needed as naptan is not in UTF-8
-    _, err := tx.Exec( "SET CLIENT_ENCODING TO WIN1252" )
+    err = tx.SetEncodingWIN1252()
     if err != nil {
       return err
     }
 
-    result, err := tx.Exec( "DELETE FROM naptan.stops" )
+    tx.OnCommitCluster( "naptan.stops", "geom" )
+
+    _, err = tx.DeleteFrom( "naptan.stops" )
     if err != nil {
       return err
     }
-    ra, err := result.RowsAffected()
-    if err != nil {
-      return err
-    }
-    log.Println( "Deleted", ra )
 
     lc := 0
     ic := 0
@@ -47,12 +55,7 @@ func (a *NaptanImport) stops( r io.ReadCloser ) error {
       lc++
       if lc > 1 {
 
-        _, err := tx.Exec( "INSERT INTO naptan.stops VALUES (" +
-          " $1, $2, $3, $4, $5, $6, $7, $8, $9,$10," +
-          "$11,$12,$13,$14,$15,$16,$17,$18,$19,$20," +
-          "$21,$22,$23,$24,$25,$26,$27,$28,$29,$30," +
-          "$31,$32," +
-           "ST_SetSRID(ST_MakePoint($33,$34), 27700))",
+        _, err := stmt.Exec(
           rec[0],
           rec[1],
           rec[2],

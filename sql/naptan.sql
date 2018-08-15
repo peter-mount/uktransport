@@ -48,6 +48,7 @@ CREATE TABLE naptan.stops (
   street                  NAME,
   crossing                NAME,
   indicator               NAME,
+
   bearing                 NAME,
   nptglocalitycode        NAME,
   localityName            NAME,
@@ -58,6 +59,7 @@ CREATE TABLE naptan.stops (
   easting                 INTEGER,
   northing                INTEGER,
   longitude               REAL,
+
   latitude                REAL,
   stoptype                NAME,
   busstoptype             NAME,
@@ -68,6 +70,7 @@ CREATE TABLE naptan.stops (
   created                 TIMESTAMP WITHOUT TIME ZONE,
   modified                TIMESTAMP WITHOUT TIME ZONE,
   revision                INTEGER,
+
   modification            NAME,
   status                  NAME,
   PRIMARY KEY (atco)

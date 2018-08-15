@@ -1,23 +1,25 @@
 package naptanimport
 
 import(
-  "database/sql"
   "encoding/csv"
+  "github.com/peter-mount/golib/kernel/db"
   "io"
   "log"
 )
 
 func (a *NaptanImport) railRef( r io.ReadCloser ) error {
-  err := a.Update( func( tx *sql.Tx ) error {
-    result, err := tx.Exec( "DELETE FROM naptan.rail" )
+  err := a.db.Update( func( tx *db.Tx ) error {
+    stmt, err := tx.Prepare( "INSERT INTO naptan.rail VALUES ($1,$2,$3,$4,$5,$6,$7,$8,ST_SetSRID(ST_MakePoint($9,$10), 27700))" )
     if err != nil {
       return err
     }
-    ra, err := result.RowsAffected()
+
+    tx.OnCommitCluster( "naptan.rail", "geom" )
+
+    _, err = tx.DeleteFrom( "naptan.rail" )
     if err != nil {
       return err
     }
-    log.Println( "Deleted", ra )
 
     lc := 0
     ic := 0
@@ -34,7 +36,7 @@ func (a *NaptanImport) railRef( r io.ReadCloser ) error {
       lc++
       if lc > 1 {
 
-        _, err := tx.Exec( "INSERT INTO naptan.rail VALUES ($1,$2,$3,$4,$5,$6,$7,$8,ST_SetSRID(ST_MakePoint($9,$10), 27700))",
+        _, err := stmt.Exec(
           rec[0],
           rec[1],
           rec[2],
@@ -58,9 +60,6 @@ func (a *NaptanImport) railRef( r io.ReadCloser ) error {
 
     return nil
   } )
-  if err != nil {
-    return err
-  }
 
-  return nil
+  return err
 }

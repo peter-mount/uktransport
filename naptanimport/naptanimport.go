@@ -1,10 +1,11 @@
 package naptanimport
 
 import (
-  "database/sql"
+//  "database/sql"
   "flag"
   "github.com/peter-mount/golib/kernel"
   "github.com/peter-mount/golib/kernel/db"
+  "github.com/peter-mount/uktransport/lib"
 )
 
 type NaptanImport struct {
@@ -14,7 +15,7 @@ type NaptanImport struct {
   dbdir        *string
 
   // The DB
-  dbService    *db.DBService
+  db           *db.DBService
 }
 
 func (a *NaptanImport) Name() string {
@@ -30,7 +31,7 @@ func (a *NaptanImport) Init( k *kernel.Kernel ) error {
   if err != nil {
     return err
   }
-  a.dbService = (dbservice).(*db.DBService)
+  a.db = (dbservice).(*db.DBService)
 
   return nil
 }
@@ -60,26 +61,15 @@ func (a *NaptanImport) Run() error {
   }
 
   if *a.retrieve || *a.importdata {
-    err := a.importData()
+    zipImporter := lib.NewZipImporter( lib.ZipImportHandlerMap{
+      "RailReferences.csv": a.railRef,
+      "Stops.csv": a.stops,
+    } )
+
+    err := zipImporter.ImportZipFile( a.zipFile() )
     if err != nil {
       return err
     }
-  }
-
-  return nil
-}
-
-func (c *NaptanImport) Update( f func( *sql.Tx ) error ) error {
-  tx, err := c.dbService.GetDB().Begin()
-  if err != nil {
-    return err
-  }
-  defer tx.Commit()
-
-  err = f( tx )
-  if err != nil {
-    tx.Rollback()
-    return err
   }
 
   return nil

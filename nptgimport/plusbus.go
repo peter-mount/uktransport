@@ -3,6 +3,7 @@ package nptgimport
 import(
   "database/sql"
   "encoding/csv"
+  "github.com/peter-mount/golib/kernel/db"
   "io"
   "log"
   "strings"
@@ -12,16 +13,20 @@ import(
 // This file contains the polygon data, one point per record for the area
 // defining the plusBus area
 func (a *NptgImport) plusBusMapping( r io.ReadCloser ) error {
-  err := a.Update( func( tx *sql.Tx ) error {
-    result, err := tx.Exec( "DELETE FROM nptg.plusbus" )
+  err := a.db.Update( func( tx *db.Tx ) error {
+
+    stmt, err := tx.Prepare( "INSERT INTO nptg.plusbus VALUES ($1,NULL,NULL,$2,$3,$4,$5,ST_MakePolygon(ST_GeomFromText($6, 27700)))" )
     if err != nil {
       return err
     }
-    ra, err := result.RowsAffected()
+    defer stmt.Close()
+
+    tx.OnCommitCluster( "nptg.plusbus", "geom" )
+
+    _, err = tx.DeleteFrom( "nptg.plusbus" )
     if err != nil {
       return err
     }
-    log.Println( "Deleted", ra )
 
     lc := 0
     ic := 0
@@ -42,7 +47,7 @@ func (a *NptgImport) plusBusMapping( r io.ReadCloser ) error {
       if lc > 1 {
         if code != rec[0] {
           if code != "" {
-            err := plusBusMapping_persist( tx, crec, coords )
+            err := plusBusMapping_persist( stmt, crec, coords )
             if err != nil {
               return err
             }
@@ -59,7 +64,7 @@ func (a *NptgImport) plusBusMapping( r io.ReadCloser ) error {
 
     // Record the last entry
     if code != "" {
-      err := plusBusMapping_persist( tx, crec, coords )
+      err := plusBusMapping_persist( stmt, crec, coords )
       if err != nil {
         return err
       }
@@ -77,23 +82,20 @@ func (a *NptgImport) plusBusMapping( r io.ReadCloser ) error {
   return nil
 }
 
-func plusBusMapping_persist( tx *sql.Tx, rec []string, coords []string ) error {
+func plusBusMapping_persist( stmt *sql.Stmt, rec []string, coords []string ) error {
   // Ensure we are closed
   if coords[len(coords)-1] != coords[0] {
     coords = append( coords, coords[0] )
   }
 
-  _, err := tx.Exec( "INSERT INTO nptg.plusbus VALUES ($1,NULL,NULL,$2,$3,$4,$5,ST_MakePolygon(ST_GeomFromText('LINESTRING($6)', 27700))",
+  _, err := stmt.Exec(
     rec[0],
     rec[5],
     rec[6],
     rec[7],
     rec[8],
-    strings.Join( coords, "," ),
+    "LINESTRING(" + strings.Join( coords, "," ) + ")",
   )
-  if err != nil {
-    return err
-  }
 
-  return nil
+  return err
 }
