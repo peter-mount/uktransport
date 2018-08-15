@@ -9,6 +9,8 @@ import (
   "time"
 )
 
+// RetrieveRequired returns true if the specified file does not exist or is older
+// than 12 hours
 func RetrieveRequired( name string ) (bool, error) {
   fi, err := os.Stat( name )
   if err != nil {
@@ -23,6 +25,8 @@ func RetrieveRequired( name string ) (bool, error) {
   return n.Sub( fi.ModTime() ) > (12 * time.Hour), nil
 }
 
+// RetrieveHttp retrieves the file at a specific url & stores it in the
+// local file system
 func RetrieveHttp( name string, url string ) error {
 
   req, err := http.NewRequest( "GET", url, nil )

@@ -11,6 +11,8 @@ import (
   "strings"
 )
 
+// SqlService is a Kernel service which will configure the PostGIS database
+// if a specified schema does not exist
 type SqlService struct {
   install      *bool
   // The DB
@@ -56,6 +58,7 @@ func (a *SqlService) Start() error {
   return nil
 }
 
+// Installed returns true if the database was initialised
 func (a *SqlService) Installed() bool {
   if a.install == nil {
     return false
@@ -63,6 +66,7 @@ func (a *SqlService) Installed() bool {
   return *a.install
 }
 
+// SchemaExists returns true if a schema exists, false if not
 func (a *SqlService) SchemaExists( schema string ) (bool, error) {
   row := a.db.QueryRow( "SELECT exists(select schema_name FROM information_schema.schemata WHERE schema_name = $1)", schema )
   var exists bool
@@ -73,6 +77,7 @@ func (a *SqlService) SchemaExists( schema string ) (bool, error) {
   return exists, nil
 }
 
+// Install runs all .sql files under the sql directory into PostGIS
 func (a *SqlService) Install() error {
   for _, name := range AssetNames() {
     log.Println( "Executing", name )
