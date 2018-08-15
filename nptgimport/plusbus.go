@@ -15,7 +15,7 @@ import(
 func (a *NptgImport) plusBusMapping( r io.ReadCloser ) error {
   err := a.db.Update( func( tx *db.Tx ) error {
 
-    stmt, err := tx.Prepare( "INSERT INTO nptg.plusbus VALUES ($1,NULL,NULL,$2,$3,$4,$5,ST_MakePolygon(ST_GeomFromText($6, 27700)))" )
+    stmt, err := tx.Prepare( "INSERT INTO nptg.plusbus VALUES ($1,$2,$3,$4,$5,ST_MakePolygon(ST_GeomFromText($6, 27700)))" )
     if err != nil {
       return err
     }

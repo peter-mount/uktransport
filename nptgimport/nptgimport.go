@@ -46,6 +46,7 @@ func (a *NptgImport) Init( k *kernel.Kernel ) error {
     a.zipFile(),
     lib.ZipImportHandlerMap{
       "PlusbusMapping.csv": a.plusBusMapping,
+      "PlusbusZones.csv": a.plusBusZone,
     } ) )
   if err != nil {
     return err

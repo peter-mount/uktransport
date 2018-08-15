@@ -35,7 +35,7 @@ CREATE INDEX rail_geom ON naptan.rail USING GIST (geom);
 -- ================================================================================
 -- stops
 -- ================================================================================
-DROP TABLE IF EXISTS naptan.stops;
+DROP TABLE IF EXISTS naptan.stops CASCADE;
 
 CREATE TABLE naptan.stops (
   atco                    NAME NOT NULL,
@@ -95,3 +95,12 @@ CREATE TABLE naptan.stopplusbuszones (
 
 CREATE INDEX stopplusbuszones_atco ON naptan.stopplusbuszones(atco);
 CREATE INDEX stopplusbuszones_zone ON naptan.stopplusbuszones(zone);
+
+-- ================================================================================
+-- plusbusstops is a view of stops that only exist within a plusbus zone.
+-- As this gets it's geometry from stops it can be used as a point feature
+-- ================================================================================
+CREATE VIEW naptan.plusbusstops
+  AS SELECT z.zone, s.*
+    FROM naptan.stops s
+    INNER JOIN naptan.stopplusbuszones z ON s.atco = z.atco;
