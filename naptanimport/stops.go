@@ -14,7 +14,7 @@ func nullIfEmpty( s string ) *string {
   return &s
 }
 
-func (a *NaptanImport) stops( r io.ReadCloser ) error {
+func (a *NaptanImport) stops( n string, r io.ReadCloser ) error {
   err := a.db.Update( func( tx *db.Tx ) error {
     stmt, err := tx.Prepare(
       "INSERT INTO naptan.stops VALUES (" +

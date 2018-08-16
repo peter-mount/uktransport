@@ -7,7 +7,7 @@ import(
   "log"
 )
 
-func (a *NaptanImport) railRef( r io.ReadCloser ) error {
+func (a *NaptanImport) railRef( n string, r io.ReadCloser ) error {
   err := a.db.Update( func( tx *db.Tx ) error {
     stmt, err := tx.Prepare( "INSERT INTO naptan.rail VALUES ($1,$2,$3,$4,$5,$6,$7,$8,ST_SetSRID(ST_MakePoint($9,$10), 27700))" )
     if err != nil {

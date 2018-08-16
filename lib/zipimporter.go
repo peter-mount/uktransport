@@ -9,7 +9,7 @@ import (
 )
 
 // ZipImportHandler handles the import of a file inside the zip file
-type ZipImportHandler func( io.ReadCloser ) error
+type ZipImportHandler func( string, io.ReadCloser ) error
 
 type ZipImportHandlerMap map[string]ZipImportHandler
 
@@ -71,5 +71,5 @@ func (z *ZipImporter) importZipFile( f *zip.File, h ZipImportHandler ) error {
   }
   defer rc.Close()
 
-  return h(rc)
+  return h( f.Name, rc )
 }

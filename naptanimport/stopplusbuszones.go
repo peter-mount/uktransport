@@ -7,7 +7,7 @@ import(
   "log"
 )
 
-func (a *NaptanImport) stopPlusbusZones( r io.ReadCloser ) error {
+func (a *NaptanImport) stopPlusbusZones( n string, r io.ReadCloser ) error {
   err := a.db.Update( func( tx *db.Tx ) error {
     stmt, err := tx.Prepare( "INSERT INTO naptan.stopplusbuszones VALUES ($1,$2)" )
     if err != nil {

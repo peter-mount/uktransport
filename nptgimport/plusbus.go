@@ -12,7 +12,7 @@ import(
 // plusBusMapping handles the import of the PlusBusMapping.csv file.
 // This file contains the polygon data, one point per record for the area
 // defining the plusBus area
-func (a *NptgImport) plusBusMapping( r io.ReadCloser ) error {
+func (a *NptgImport) plusBusMapping( n string, r io.ReadCloser ) error {
   err := a.db.Update( func( tx *db.Tx ) error {
 
     stmt, err := tx.Prepare( "INSERT INTO nptg.plusbus VALUES ($1,$2,$3,$4,$5,ST_MakePolygon(ST_GeomFromText($6, 27700)))" )
