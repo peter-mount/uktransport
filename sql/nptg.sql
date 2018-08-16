@@ -7,22 +7,22 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE SCHEMA IF NOT EXISTS nptg;
 
 -- ================================================================================
--- plusbus consists of a polygon for each Plusbus zone
+-- PlusbusMapping consists of a polygon for each Plusbus zone
 -- ================================================================================
-DROP TABLE IF EXISTS nptg.plusbus CASCADE;
+DROP TABLE IF EXISTS nptg.PlusbusMapping CASCADE;
 
-CREATE TABLE nptg.plusbus (
-  zone          NAME NOT NULL,
-  created       TIMESTAMP WITHOUT TIME ZONE,
-  modified      TIMESTAMP WITHOUT TIME ZONE,
-  revision      INTEGER,
-  modification  NAME,
-  PRIMARY KEY (zone)
+CREATE TABLE nptg.PlusbusMapping (
+  PlusbusZoneCode       NAME NOT NULL,
+  CreationDateTime      TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime  TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber        INTEGER,
+  Modification          NAME,
+  PRIMARY KEY (PlusbusZoneCode)
 );
 
 -- geometry
-SELECT addgeometrycolumn( '', 'nptg', 'plusbus', 'geom', 27700, 'POLYGON', 2, true);
-CREATE INDEX plusbus_geom ON nptg.plusbus USING GIST (geom);
+SELECT addgeometrycolumn( '', 'nptg', 'plusbusmapping', 'geom', 27700, 'POLYGON', 2, true);
+CREATE INDEX plusbusmapping_geom ON nptg.PlusbusMapping USING GIST (geom);
 
 -- ================================================================================
 -- PlusbusZones Holds the metadata for a Plusbus zone
@@ -30,15 +30,15 @@ CREATE INDEX plusbus_geom ON nptg.plusbus USING GIST (geom);
 DROP TABLE IF EXISTS nptg.PlusbusZones CASCADE;
 
 CREATE TABLE nptg.PlusbusZones (
-  zone          NAME NOT NULL,
-  name          NAME,
-  namelang      NAME,
-  country       NAME,
-  created       TIMESTAMP WITHOUT TIME ZONE,
-  modified      TIMESTAMP WITHOUT TIME ZONE,
-  revision      INTEGER,
-  modification  NAME,
-  PRIMARY KEY (zone)
+  PlusbusZoneCode       NAME NOT NULL,
+  Name                  NAME,
+  NameLang              NAME,
+  Country               NAME,
+  CreationDateTime      TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime  TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber        INTEGER,
+  Modification          NAME,
+  PRIMARY KEY (PlusbusZoneCode)
 );
 
 -- ================================================================================
@@ -47,9 +47,11 @@ CREATE TABLE nptg.PlusbusZones (
 -- This view inherits the geometry from naptan.rail so can be used as a Point feature
 -- ================================================================================
 CREATE VIEW nptg.railplusbus
-  AS SELECT z.zone AS plusbuszones, r.*
+  AS SELECT
+      z.PlusbusZoneCode,
+      r.*
     FROM naptan.rail r
-      INNER JOIN nptg.plusbus z ON ST_Contains( z.geom, r.geom );
+      INNER JOIN nptg.PlusbusMapping z ON ST_Contains( z.geom, r.geom );
 
 -- ================================================================================
 -- AdjacentLocality
@@ -57,17 +59,17 @@ CREATE VIEW nptg.railplusbus
 DROP TABLE IF EXISTS nptg.AdjacentLocality CASCADE;
 
 CREATE TABLE nptg.AdjacentLocality (
-  nptglocalitycode      NAME NOT NULL,
-  adjacentlocalitycode  NAME NOT NULL,
-  created               TIMESTAMP WITHOUT TIME ZONE,
-  modified              TIMESTAMP WITHOUT TIME ZONE,
-  revision              INTEGER,
-  modification          NAME,
-  PRIMARY KEY (nptglocalitycode,adjacentlocalitycode)
+  NptgLocalityCode          NAME NOT NULL,
+  AdjacentNptgLocalityCode  NAME NOT NULL,
+  CreationDateTime          TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime      TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber            INTEGER,
+  Modification              NAME,
+  PRIMARY KEY (NptgLocalityCode,AdjacentNptgLocalityCode)
 );
 
-CREATE INDEX AdjacentLocality_n ON nptg.AdjacentLocality( nptglocalitycode );
-CREATE INDEX AdjacentLocality_a ON nptg.AdjacentLocality( adjacentlocalitycode );
+CREATE INDEX AdjacentLocality_n ON nptg.AdjacentLocality( NptgLocalityCode );
+CREATE INDEX AdjacentLocality_a ON nptg.AdjacentLocality( AdjacentNptgLocalityCode );
 
 -- ================================================================================
 -- AdminAreas
@@ -87,10 +89,10 @@ CREATE TABLE nptg.AdminAreas (
   National                    NAME,
   ContactEmail                NAME,
   ContactTelephone            NAME,
-  created                     TIMESTAMP WITHOUT TIME ZONE,
-  modified                    TIMESTAMP WITHOUT TIME ZONE,
-  revision                    INTEGER,
-  modification                NAME,
+  CreationDateTime      TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime  TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber        INTEGER,
+  Modification          NAME,
   PRIMARY KEY (AdministrativeAreaCode)
 );
 
@@ -107,10 +109,10 @@ CREATE TABLE nptg.Districts (
   DistrictName            NAME NOT NULL,
   DistrictLang            NAME,
   AdministrativeAreaCode NAME NOT NULL,
-  created                 TIMESTAMP WITHOUT TIME ZONE,
-  modified                TIMESTAMP WITHOUT TIME ZONE,
-  revision                INTEGER,
-  modification            NAME,
+  CreationDateTime      TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime  TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber        INTEGER,
+  Modification          NAME,
   PRIMARY KEY (DistrictCode)
 );
 
@@ -135,10 +137,10 @@ CREATE TABLE nptg.Localities (
   AdministrativeAreaCode  NAME NOT NULL,
   NptgDistrictCode        NAME NOT NULL,
   SourceLocalityType      NAME NOT NULL,
-  created                 TIMESTAMP WITHOUT TIME ZONE,
-  modified                TIMESTAMP WITHOUT TIME ZONE,
-  revision                INTEGER,
-  modification            NAME,
+  CreationDateTime        TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime    TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber          INTEGER,
+  Modification            NAME,
   PRIMARY KEY (NptgLocalityCode)
 );
 
@@ -170,10 +172,10 @@ CREATE TABLE nptg.LocalityAlternativeNames (
   QualifierNameLang       NAME NOT NULL,
   QualifierLocalityRef    NAME,
   QualifierDistrictRef    NAME,
-  created                 TIMESTAMP WITHOUT TIME ZONE,
-  modified                TIMESTAMP WITHOUT TIME ZONE,
-  revision                INTEGER,
-  modification            NAME,
+  CreationDateTime        TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime    TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber          INTEGER,
+  Modification            NAME,
   PRIMARY KEY (NptgLocalityCode,OldNptgLocalityCode)
 );
 
@@ -190,10 +192,10 @@ DROP TABLE IF EXISTS nptg.LocalityHierarchy CASCADE;
 CREATE TABLE nptg.LocalityHierarchy (
   ParentNptgLocalityCode  NAME NOT NULL,
   ChildNptgLocalityCode   NAME NOT NULL,
-  created                 TIMESTAMP WITHOUT TIME ZONE,
-  modified                TIMESTAMP WITHOUT TIME ZONE,
-  revision                INTEGER,
-  modification            NAME,
+  CreationDateTime        TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime    TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber          INTEGER,
+  Modification            NAME,
   PRIMARY KEY (ParentNptgLocalityCode,ChildNptgLocalityCode)
 );
 
@@ -206,13 +208,13 @@ CREATE INDEX LocalityHierarchy_c ON nptg.LocalityHierarchy( ChildNptgLocalityCod
 DROP TABLE IF EXISTS nptg.Regions CASCADE;
 
 CREATE TABLE nptg.Regions (
-  RegionCode      NAME NOT NULL,
-  RegionName      NAME NOT NULL,
-  RegionNameLang  NAME,
-  created         TIMESTAMP WITHOUT TIME ZONE,
-  revision        INTEGER,
-  modified        TIMESTAMP WITHOUT TIME ZONE,
-  modification    NAME,
+  RegionCode            NAME NOT NULL,
+  RegionName            NAME NOT NULL,
+  RegionNameLang        NAME,
+  CreationDateTime      TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime  TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber        INTEGER,
+  Modification          NAME,
   PRIMARY KEY (RegionCode)
 );
 

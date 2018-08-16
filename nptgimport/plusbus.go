@@ -21,15 +21,18 @@ func (a *NptgImport) plusBusMapping( n string, r io.ReadCloser ) error {
       return err
     }
 
-    stmt, err := tx.Prepare( "INSERT INTO nptg.plusbus VALUES ($1,$2,$3,$4,$5,ST_MakePolygon(ST_GeomFromText($6, 27700)))" )
+    table := "nptg.PlusbusMapping"
+    geom := "PlusbusMapping_geom"
+
+    stmt, err := tx.Prepare( "INSERT INTO " + table + " VALUES ($1,$2,$3,$4,$5,ST_MakePolygon(ST_GeomFromText($6, 27700)))" )
     if err != nil {
       return err
     }
     defer stmt.Close()
 
-    tx.OnCommitCluster( "nptg.plusbus", "plusbus_geom" )
+    tx.OnCommitCluster( table, geom )
 
-    _, err = tx.DeleteFrom( "nptg.plusbus" )
+    _, err = tx.DeleteFrom( table )
     if err != nil {
       return err
     }
