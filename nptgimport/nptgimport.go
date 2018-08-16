@@ -1,7 +1,6 @@
 package nptgimport
 
 import (
-  //"database/sql"
   "flag"
   "github.com/peter-mount/golib/kernel"
   "github.com/peter-mount/golib/kernel/db"
@@ -48,6 +47,7 @@ func (a *NptgImport) Init( k *kernel.Kernel ) error {
       "AdjacentLocality.csv": a.sql.CSVImport,
       "AdminAreas.csv": a.sql.CSVImport,
       "Districts.csv": a.sql.CSVImport,
+      "Localities.csv": a.localities,
       "LocalityAlternativeNames.csv": a.sql.CSVImport,
       "LocalityHierarchy.csv": a.sql.CSVImport,
       "PlusbusMapping.csv": a.plusBusMapping,

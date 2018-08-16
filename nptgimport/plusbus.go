@@ -15,6 +15,12 @@ import(
 func (a *NptgImport) plusBusMapping( n string, r io.ReadCloser ) error {
   err := a.db.Update( func( tx *db.Tx ) error {
 
+    // Needed as csv files are not in UTF-8
+    err := tx.SetEncodingWIN1252()
+    if err != nil {
+      return err
+    }
+
     stmt, err := tx.Prepare( "INSERT INTO nptg.plusbus VALUES ($1,$2,$3,$4,$5,ST_MakePolygon(ST_GeomFromText($6, 27700)))" )
     if err != nil {
       return err

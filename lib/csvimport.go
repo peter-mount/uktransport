@@ -19,11 +19,17 @@ func (a *SqlService) CSVImport( n string, r io.ReadCloser ) error {
 
   return a.db.Update( func( tx *db.Tx ) error {
 
+    // Needed as csv files are not in UTF-8
+    err := tx.SetEncodingWIN1252()
+    if err != nil {
+      return err
+    }
+
     var stmt *sql.Stmt
 
     tx.OnCommitVacuumFull( table )
 
-    _, err := tx.DeleteFrom( table )
+    _, err = tx.DeleteFrom( table )
     if err != nil {
       return err
     }

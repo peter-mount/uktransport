@@ -118,6 +118,43 @@ CREATE INDEX Districts_n ON nptg.Districts( DistrictName );
 CREATE INDEX Districts_a ON nptg.Districts( AdministrativeAreaCode );
 
 -- ================================================================================
+-- Localities
+-- ================================================================================
+DROP TABLE IF EXISTS nptg.Localities CASCADE;
+
+CREATE TABLE nptg.Localities (
+  NptgLocalityCode        NAME NOT NULL,
+  LocalityName            NAME NOT NULL,
+  LocalityNameLang        NAME NOT NULL,
+  ShortName               NAME NOT NULL,
+  ShortNameLang           NAME NOT NULL,
+  QualifierName           NAME NOT NULL,
+  QualifierNameLang       NAME NOT NULL,
+  QualifierLocalityRef    NAME NOT NULL,
+  QualifierDistrictRef    NAME NOT NULL,
+  AdministrativeAreaCode  NAME NOT NULL,
+  NptgDistrictCode        NAME NOT NULL,
+  SourceLocalityType      NAME NOT NULL,
+  created                 TIMESTAMP WITHOUT TIME ZONE,
+  modified                TIMESTAMP WITHOUT TIME ZONE,
+  revision                INTEGER,
+  modification            NAME,
+  PRIMARY KEY (NptgLocalityCode)
+);
+
+-- geometry
+SELECT addgeometrycolumn( '', 'nptg', 'localities', 'geom', 27700, 'POINT', 2, true);
+CREATE INDEX Localities_geom ON nptg.Localities USING GIST (geom);
+
+CREATE INDEX Localities_ln ON nptg.Localities( LocalityName );
+CREATE INDEX Localities_sn ON nptg.Localities( ShortName );
+CREATE INDEX Localities_qn ON nptg.Localities( QualifierName );
+CREATE INDEX Localities_lr ON nptg.Localities( QualifierLocalityRef );
+CREATE INDEX Localities_dr ON nptg.Localities( QualifierDistrictRef );
+CREATE INDEX Localities_ac ON nptg.Localities( AdministrativeAreaCode );
+CREATE INDEX Localities_dc ON nptg.Localities( NptgDistrictCode );
+
+-- ================================================================================
 -- LocalityAlternativeNames
 -- ================================================================================
 DROP TABLE IF EXISTS nptg.LocalityAlternativeNames CASCADE;
