@@ -1,4 +1,4 @@
-package nptgimport
+package lib
 
 import(
   "database/sql"
@@ -11,12 +11,15 @@ import(
 )
 
 // genericImport imports the csv file into a table with the file name
-func (a *NptgImport) genericImport( n string, r io.ReadCloser ) error {
-  err := a.db.Update( func( tx *db.Tx ) error {
+func (a *SqlService) CSVImport( n string, r io.ReadCloser ) error {
+  if a.Schema == "" {
+    return fmt.Errorf( "No schema defined for CSVImport: %s", n)
+  }
+  table := a.Schema + "." + n[:len(n)-4]
+
+  return a.db.Update( func( tx *db.Tx ) error {
 
     var stmt *sql.Stmt
-
-    table := "nptg." + n[:len(n)-4]
 
     tx.OnCommitVacuumFull( table )
 
@@ -74,9 +77,4 @@ func (a *NptgImport) genericImport( n string, r io.ReadCloser ) error {
 
     return nil
   } )
-  if err != nil {
-    return err
-  }
-
-  return nil
 }

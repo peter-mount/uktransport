@@ -45,14 +45,14 @@ func (a *NptgImport) Init( k *kernel.Kernel ) error {
   zipImporter, err := k.AddService( lib.NewZipImporter(
     a.zipFile(),
     lib.ZipImportHandlerMap{
-      "AdjacentLocality.csv": a.genericImport,
-      "AdminAreas.csv": a.genericImport,
-      "Districts.csv": a.genericImport,
-      "LocalityAlternativeNames.csv": a.genericImport,
-      "LocalityHierarchy.csv": a.genericImport,
+      "AdjacentLocality.csv": a.sql.CSVImport,
+      "AdminAreas.csv": a.sql.CSVImport,
+      "Districts.csv": a.sql.CSVImport,
+      "LocalityAlternativeNames.csv": a.sql.CSVImport,
+      "LocalityHierarchy.csv": a.sql.CSVImport,
       "PlusbusMapping.csv": a.plusBusMapping,
-      "PlusbusZones.csv": a.genericImport,
-      "Regions.csv": a.genericImport,
+      "PlusbusZones.csv": a.sql.CSVImport,
+      "Regions.csv": a.sql.CSVImport,
     } ) )
   if err != nil {
     return err
