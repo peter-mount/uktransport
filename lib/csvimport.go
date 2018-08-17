@@ -58,7 +58,7 @@ func (c *csvimport) columnExists( n string ) bool {
   return exists
 }
 
-func (c *csvimport) checkGeometry() {
+func (c *csvimport) checkGeometry() bool {
   if c.columnExists( easting ) && c.columnExists( northing ) {
     c.geom_srid = 27700
     c.geom_east = easting
@@ -69,6 +69,7 @@ func (c *csvimport) checkGeometry() {
     c.geom_north = latitude
   }
   c.hasGeometry = c.geom_srid != 0 && c.geom_east != "" && c.geom_north != ""
+  return c.hasGeometry
 }
 
 // Generate the import statement
@@ -120,9 +121,6 @@ func (c *csvimport) parseHeader( row []string ) error {
     c.columns = append( c.columns, col )
   }
 
-  // Check to see if we have geometry
-  c.checkGeometry()
-
   // create the Stmt
   err := c.generateStatement( row )
   if err != nil {
@@ -130,7 +128,11 @@ func (c *csvimport) parseHeader( row []string ) error {
     return err
   }
 
-  if c.hasGeometry {
+  // Check to see if we have geometry
+  if c.checkGeometry() {
+    // Update the geometry prior to the commit
+    c.tx.BeforeCommit( c.updateGeometry )
+
     // Cluster on the geometry at the end
     c.tx.OnCommitCluster( c.table, c.geom_index )
   } else {
@@ -168,7 +170,7 @@ func (c *csvimport) insertRow( row []string ) error {
 }
 
 // genericImport imports the csv file into a table with the file name
-func (c *csvimport) updateGeometry() error {
+func (c *csvimport) updateGeometry( tx *db.Tx ) error {
 
   if c.hasGeometry {
     log.Printf(
@@ -240,6 +242,6 @@ func (a *SqlService) CSVImport( n string, r io.ReadCloser ) error {
 
     log.Println( "Inserted", state.importCount )
 
-    return state.updateGeometry()
+    return nil
   } )
 }
