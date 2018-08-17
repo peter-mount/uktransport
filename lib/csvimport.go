@@ -172,7 +172,7 @@ func (c *csvimport) updateGeometry() error {
 
   if c.hasGeometry {
     log.Printf(
-      "Updating geometry using %s(%s,%s) srid %d",
+      "Updating geometry using %s(%s,%s) EPSG:%d",
       c.table,
       c.geom_east,
       c.geom_north,
