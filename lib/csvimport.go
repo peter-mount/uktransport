@@ -24,17 +24,12 @@ type csvimport struct {
   columns      []*column
   // Number of lines imported
   importCount     int
-  // trie if we have geometry, osgb first then wgs84 second
+  // true if we have geometry
   hasGeometry     bool
-  // true if OSGB geometry exists, i.e. Has Easting, Northing columns in ESRI:27700
-  osgb            bool
-  // true if WGS84 geometry exists, i.e. Has Longitude, Latitude columns in ESRI:4326
-  wgs84           bool
-  // The coordinate columns
-  geom_east       int
-  geom_north      int
-  // The index for the geometry
-  geomIndex       string
+  geom_srid       int
+  geom_east       string
+  geom_north      string
+  geom_index      string
 }
 
 // Internal column mapping column names to sql fields
@@ -65,15 +60,15 @@ func (c *csvimport) columnExists( n string ) bool {
 
 func (c *csvimport) checkGeometry() {
   if c.columnExists( easting ) && c.columnExists( northing ) {
-    c.osgb = true
-    c.geom_east = c.names[easting].column
-    c.geom_north = c.names[northing].column
+    c.geom_srid = 27700
+    c.geom_east = easting
+    c.geom_north = northing
   } else if c.columnExists( longitude ) && c.columnExists( latitude ) {
-    c.wgs84 = true
-    c.geom_east = c.names[longitude].column
-    c.geom_north = c.names[latitude].column
+    c.geom_srid = 4326
+    c.geom_east = longitude
+    c.geom_north = latitude
   }
-  c.hasGeometry = c.osgb || c.wgs84
+  c.hasGeometry = c.geom_srid != 0 && c.geom_east != "" && c.geom_north != ""
 }
 
 // Generate the import statement
@@ -88,28 +83,12 @@ func (c *csvimport) generateStatement( row []string ) error {
     s = append( s, col.name )
   }
 
-  if c.hasGeometry {
-    s = append( s, ",geom" )
-  }
-
   s = append( s, ") VALUES (" )
 
   f := "$%d"
   for i, _ := range c.columns {
     s = append( s, fmt.Sprintf( f, i+1 ) )
     f = ",$%d"
-  }
-
-  if c.hasGeometry {
-    var srid int
-    if c.osgb {
-      srid = 27700
-    } else if c.wgs84 {
-      srid = 4326
-    } else {
-      return fmt.Errorf( "hasGeometry set but not osgb/wgs84" )
-    }
-    s = append( s, fmt.Sprintf( ",ST_SetSRID(ST_MakePoint($%d,$%d),%d)", c.geom_east, c.geom_north, srid ) )
   }
 
   s = append( s, ")" )
@@ -147,12 +126,13 @@ func (c *csvimport) parseHeader( row []string ) error {
   // create the Stmt
   err := c.generateStatement( row )
   if err != nil {
+    log.Println( "Failed to prepare statement" )
     return err
   }
 
   if c.hasGeometry {
     // Cluster on the geometry at the end
-    c.tx.OnCommitCluster( c.table, c.geomIndex )
+    c.tx.OnCommitCluster( c.table, c.geom_index )
   } else {
     // Vacuum at the end when we have no geometry
     c.tx.OnCommitVacuumFull( c.table )
@@ -163,8 +143,9 @@ func (c *csvimport) parseHeader( row []string ) error {
   return err
 }
 
+// isNull returns nil if v is "" or contains 0x00 otherwise v
 func isNull( v string ) interface{} {
-  if v == "" {
+  if v == "" || v == "\x00" {
     return nil
   }
   return v
@@ -176,16 +157,46 @@ func (c *csvimport) insertRow( row []string ) error {
     args = append( args, isNull( row[col.column] ) )
   }
 
-  if c.hasGeometry {
-    args = append( args, row[c.geom_east], row[c.geom_north] )
-  }
-
   _, err := c.stmt.Exec( args... )
   if err != nil {
+    log.Println( "Insert failed:", c.importCount+1,"\n\"", strings.Join(row,"\",\""), "\"" )
     return err
   }
 
   c.importCount++
+  return nil
+}
+
+// genericImport imports the csv file into a table with the file name
+func (c *csvimport) updateGeometry() error {
+
+  if c.hasGeometry {
+    log.Printf(
+      "Updating geometry using %s(%s,%s) srid %d",
+      c.table,
+      c.geom_east,
+      c.geom_north,
+      c.geom_srid )
+
+    result, err := c.tx.Exec( fmt.Sprintf(
+      "UPDATE %s SET geom = ST_SetSRID(ST_MakePoint(%s,%s),%d) WHERE %s IS NOT NULL AND %s IS NOT NULL",
+      c.table,
+      c.geom_east, c.geom_north,
+      c.geom_srid,
+      c.geom_east, c.geom_north,
+    ) )
+    if err != nil {
+      return err
+    }
+
+    ra, err := result.RowsAffected()
+    if err != nil {
+      return err
+    }
+
+    log.Printf( "Updated %d entries", ra )
+  }
+
   return nil
 }
 
@@ -198,7 +209,7 @@ func (a *SqlService) CSVImport( n string, r io.ReadCloser ) error {
   tableName := n[:len(n)-4]
   state := csvimport{
     table: a.Schema + "." + tableName,
-    geomIndex: tableName + "_geom",
+    geom_index: tableName + "_geom",
   }
   defer state.close()
 
@@ -229,6 +240,6 @@ func (a *SqlService) CSVImport( n string, r io.ReadCloser ) error {
 
     log.Println( "Inserted", state.importCount )
 
-    return nil
+    return state.updateGeometry()
   } )
 }
