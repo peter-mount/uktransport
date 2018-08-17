@@ -221,26 +221,30 @@ SELECT addgeometrycolumn( '', 'naptan', 'stops', 'geom', 27700, 'POINT', 2, true
 CREATE INDEX stops_geom ON naptan.stops USING GIST (geom);
 
 -- ================================================================================
--- stopplusbuszones - links naptan.stops with nptg.plusbus to allow us to filter
+-- StopPlusbusZones - links naptan.stops with nptg.plusbus to allow us to filter
 -- stops within a specific plusbus zone
 -- ================================================================================
-DROP TABLE IF EXISTS naptan.stopplusbuszones CASCADE;
+DROP TABLE IF EXISTS naptan.StopPlusbusZones CASCADE;
 
 -- Note no references here as we may not have the entries present
-CREATE TABLE naptan.stopplusbuszones (
-  atco  NAME NOT NULL,
-  zone  NAME NOT NULL,
-  PRIMARY KEY (atco, zone)
+CREATE TABLE naptan.StopPlusbusZones (
+  AtcoCode              NAME NOT NULL,
+  PlusbusZoneCode       NAME NOT NULL,
+  CreationDateTime      TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime  TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber        INTEGER,
+  Modification          NAME,
+  PRIMARY KEY (AtcoCode, PlusbusZoneCode)
 );
 
-CREATE INDEX stopplusbuszones_atco ON naptan.stopplusbuszones(atco);
-CREATE INDEX stopplusbuszones_zone ON naptan.stopplusbuszones(zone);
+CREATE INDEX stopplusbuszones_a ON naptan.stopplusbuszones(AtcoCode);
+CREATE INDEX stopplusbuszones_p ON naptan.stopplusbuszones(PlusbusZoneCode);
 
 -- ================================================================================
 -- plusbusstops is a view of stops that only exist within a plusbus zone.
 -- As this gets it's geometry from stops it can be used as a point feature
 -- ================================================================================
 CREATE VIEW naptan.plusbusstops
-  AS SELECT z.zone AS plusbuszone, s.*
-    FROM naptan.stops s
-    INNER JOIN naptan.stopplusbuszones z ON s.ATCOCode = z.atco;
+  AS SELECT z.PlusbusZoneCode, s.*
+    FROM naptan.Stops s
+    INNER JOIN naptan.StopPlusbusZones z ON s.ATCOCode = z.AtcoCode;

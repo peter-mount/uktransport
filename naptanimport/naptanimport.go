@@ -50,7 +50,7 @@ func (a *NaptanImport) Init( k *kernel.Kernel ) error {
       "AreaHierarchy.csv": a.sql.CSVImport,
       "RailReferences.csv": a.sql.CSVImport,
       "Stops.csv": a.sql.CSVImport,
-      "StopPlusbusZones.csv": a.stopPlusbusZones,
+      "StopPlusbusZones.csv": a.sql.CSVImport,
     } ) )
   if err != nil {
     return err
