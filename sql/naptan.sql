@@ -164,46 +164,57 @@ CREATE INDEX RailReferences_geom ON naptan.RailReferences USING GIST (geom);
 -- ================================================================================
 -- stops
 -- ================================================================================
-DROP TABLE IF EXISTS naptan.stops CASCADE;
+DROP TABLE IF EXISTS naptan.Stops CASCADE;
 
-CREATE TABLE naptan.stops (
-  atco                    NAME NOT NULL,
-  naptan                  NAME,
-  platecode               NAME,
-  cleardowncode           NAME,
-  commonName              NAME,
-  shortcommonname         NAME,
-  landmark                NAME,
-  street                  NAME,
-  crossing                NAME,
-  indicator               NAME,
-
-  bearing                 NAME,
-  nptglocalitycode        NAME,
-  localityName            NAME,
-  parentLocalityName      NAME,
-  grandParentLocalityName NAME,
-  town                    NAME,
-  suburb                  NAME,
-  easting                 INTEGER,
-  northing                INTEGER,
-  longitude               REAL,
-
-  latitude                REAL,
-  stoptype                NAME,
-  busstoptype             NAME,
-  timingstatus            NAME,
-  defaultwaittime         NAME,
-  notes                   TEXT,
-  adminareacode           NAME,
-  created                 TIMESTAMP WITHOUT TIME ZONE,
-  modified                TIMESTAMP WITHOUT TIME ZONE,
-  revision                INTEGER,
-
-  modification            NAME,
-  status                  NAME,
-  PRIMARY KEY (atco)
+CREATE TABLE naptan.Stops (
+  ATCOCode                NAME NOT NULL,
+  NaptanCode              NAME,
+  PlateCode               NAME,
+  CleardownCode           NAME,
+  CommonName              NAME,
+  CommonNameLang          NAME,
+  ShortCommonName         NAME,
+  ShortCommonNameLang     NAME,
+  Landmark                NAME,
+  LandmarkLang            NAME,
+  Street                  NAME,
+  StreetLang              NAME,
+  Crossing                NAME,
+  CrossingLang            NAME,
+  Indicator               NAME,
+  IndicatorLang           NAME,
+  Bearing                 NAME,
+  NptgLocalityCode        NAME,
+  LocalityName            NAME,
+  ParentLocalityName      NAME,
+  GrandParentLocalityName NAME,
+  Town                    NAME,
+  TownLang                NAME,
+  Suburb                  NAME,
+  SuburbLang              NAME,
+  LocalityCentre          NAME,
+  GridType                NAME,
+  Easting                 INTEGER,
+  Northing                INTEGER,
+  Longitude               REAL,
+  Latitude                REAL,
+  StopType                NAME,
+  BusStopType             NAME,
+  TimingStatus            NAME,
+  DefaultWaitTime         NAME,
+  Notes                   NAME,
+  NotesLang               NAME,
+  AdministrativeAreaCode  NAME,
+  CreationDateTime        TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime    TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber          INTEGER,
+  Modification            NAME,
+  Status                  NAME,
+  PRIMARY KEY (ATCOCode)
 );
+
+CREATE INDEX stops_nc ON naptan.stops(NaptanCode);
+CREATE INDEX stops_cn ON naptan.stops(lower(CommonName));
 
 -- geometry
 SELECT addgeometrycolumn( '', 'naptan', 'stops', 'geom', 27700, 'POINT', 2, true);
@@ -232,4 +243,4 @@ CREATE INDEX stopplusbuszones_zone ON naptan.stopplusbuszones(zone);
 CREATE VIEW naptan.plusbusstops
   AS SELECT z.zone AS plusbuszone, s.*
     FROM naptan.stops s
-    INNER JOIN naptan.stopplusbuszones z ON s.atco = z.atco;
+    INNER JOIN naptan.stopplusbuszones z ON s.ATCOCode = z.atco;
