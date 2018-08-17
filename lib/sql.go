@@ -6,6 +6,7 @@ import (
   "flag"
   "github.com/peter-mount/golib/kernel"
   "github.com/peter-mount/golib/kernel/db"
+  "github.com/peter-mount/sortfold"
   "io"
   "log"
   "strings"
@@ -79,7 +80,10 @@ func (a *SqlService) SchemaExists( schema string ) (bool, error) {
 
 // Install runs all .sql files under the sql directory into PostGIS
 func (a *SqlService) Install() error {
-  for _, name := range AssetNames() {
+  names := sortfold.StringSlice(AssetNames())
+  names.Sort()
+
+  for _, name := range names {
     log.Println( "Executing", name )
 
     asset, err := AssetString( name )
