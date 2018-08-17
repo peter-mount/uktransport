@@ -45,7 +45,10 @@ func (a *NaptanImport) Init( k *kernel.Kernel ) error {
   zipImporter, err := k.AddService( lib.NewZipImporter(
     a.zipFile(),
     lib.ZipImportHandlerMap{
-      "RailReferences.csv": a.railRef,
+      "AirReferences.csv": a.sql.CSVImport,
+      "AlternativeDescriptors.csv": a.sql.CSVImport,
+      "AreaHierarchy.csv": a.sql.CSVImport,
+      "RailReferences.csv": a.sql.CSVImport,
       "Stops.csv": a.stops,
       "StopPlusbusZones.csv": a.stopPlusbusZones,
     } ) )

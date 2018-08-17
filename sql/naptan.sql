@@ -7,29 +7,159 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE SCHEMA IF NOT EXISTS naptan;
 
 -- ================================================================================
--- railreference
+-- AirReferences
 -- ================================================================================
-DROP TABLE IF EXISTS naptan.rail CASCADE;
+DROP TABLE IF EXISTS naptan.AirReferences CASCADE;
 
-CREATE TABLE naptan.rail (
-  atco          NAME NOT NULL,
-  tiploc        NAME,
-  crs           CHAR(3),
-  name          NAME,
-  created       TIMESTAMP WITHOUT TIME ZONE,
-  modified      TIMESTAMP WITHOUT TIME ZONE,
-  revision      INTEGER,
-  modification  NAME,
-  PRIMARY KEY (atco)
+CREATE TABLE naptan.AirReferences (
+  AtcoCode              NAME NOT NULL,
+  IataCode              NAME NOT NULL,
+  Name                  NAME NOT NULL,
+  NameLang              NAME,
+  CreationDateTime      NAME,
+  ModificationDateTime  NAME,
+  RevisionNumber        INTEGER,
+  Modification          NAME,
+  PRIMARY KEY (AtcoCode)
 );
 
-CREATE INDEX rail_t ON naptan.rail(tiploc);
-CREATE INDEX rail_c ON naptan.rail(crs);
-CREATE INDEX rail_n ON naptan.rail(lower(name));
+CREATE INDEX AirReferences_ncc ON naptan.AirReferences(IataCode);
+CREATE INDEX AirReferences_n ON naptan.AirReferences(Name);
+
+-- ================================================================================
+-- AlternativeDescriptors
+-- ================================================================================
+DROP TABLE IF EXISTS naptan.AlternativeDescriptors CASCADE;
+
+CREATE TABLE naptan.AlternativeDescriptors (
+  AtcoCode              NAME NOT NULL,
+  CommonName            NAME NOT NULL,
+  CommonNameLang        NAME,
+  ShortName             NAME,
+  ShortCommonNameLang   NAME,
+  Landmark              NAME,
+  LandmarkLang          NAME,
+  Street                NAME,
+  StreetLang            NAME,
+  Crossing              NAME,
+  CrossingLang          NAME,
+  Indicator             NAME,
+  IndicatorLang         NAME,
+  CreationDateTime      NAME,
+  ModificationDateTime  NAME,
+  RevisionNumber        NAME,
+  Modification          NAME,
+  PRIMARY KEY (AtcoCode,CommonName)
+);
+
+CREATE INDEX AlternativeDescriptors_ac ON naptan.AlternativeDescriptors(AtcoCode);
+CREATE INDEX AlternativeDescriptors_cn ON naptan.AlternativeDescriptors(CommonName);
+CREATE INDEX AlternativeDescriptors_sn ON naptan.AlternativeDescriptors(ShortName);
+
+-- ================================================================================
+-- AreaHierarchy
+-- ================================================================================
+DROP TABLE IF EXISTS naptan.AreaHierarchy CASCADE;
+
+CREATE TABLE naptan.AreaHierarchy (
+  ParentStopAreaCode    NAME NOT NULL,
+  ChildStopAreaCode     NAME NOT NULL,
+  CreationDateTime      NAME,
+  ModificationDateTime  NAME,
+  RevisionNumber        INTEGER,
+  Modification          NAME,
+  PRIMARY KEY (ParentStopAreaCode,ChildStopAreaCode)
+);
+
+CREATE INDEX AreaHierarchy_p ON naptan.AreaHierarchy(ParentStopAreaCode);
+CREATE INDEX AreaHierarchy_c ON naptan.AreaHierarchy(ChildStopAreaCode);
+
+-- ================================================================================
+-- CoachReferences
+-- ================================================================================
+DROP TABLE IF EXISTS naptan.CoachReferences CASCADE;
+
+CREATE TABLE naptan.CoachReferences (
+  AtcoCode              NAME NOT NULL,
+  OperatorRef           NAME NOT NULL,
+  NationalCoachCode     NAME NOT NULL,
+  Name                  NAME NOT NULL,
+  NameLang              NAME NOT NULL,
+  LongName              NAME NOT NULL,
+  LongNameLang          NAME NOT NULL,
+  GridType              NAME NOT NULL,
+  Easting               INTEGER NOT NULL,
+  Northing              INTEGER NOT NULL,
+  CreationDateTime      TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime  TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber        INTEGER,
+  Modification          NAME,
+  PRIMARY KEY (AtcoCode)
+);
+
+CREATE INDEX CoachReferences_ncc ON naptan.CoachReferences(NationalCoachCode);
+CREATE INDEX CoachReferences_n ON naptan.CoachReferences(Name);
+CREATE INDEX CoachReferences_ln ON naptan.CoachReferences(LongName);
 
 -- geometry
-SELECT addgeometrycolumn( '', 'naptan', 'rail', 'geom', 27700, 'POINT', 2, true);
-CREATE INDEX rail_geom ON naptan.rail USING GIST (geom);
+SELECT addgeometrycolumn( '', 'naptan', 'coachreferences', 'geom', 27700, 'POINT', 2, true);
+CREATE INDEX CoachReferences_geom ON naptan.CoachReferences USING GIST (geom);
+
+-- ================================================================================
+-- FerryReferences
+-- ================================================================================
+DROP TABLE IF EXISTS naptan.FerryReferences CASCADE;
+
+CREATE TABLE naptan.FerryReferences (
+  AtcoCode              NAME NOT NULL,
+  FerryCode             NAME NOT NULL,
+  Name                  NAME NOT NULL,
+  NameLang              NAME NOT NULL,
+  GridType              NAME NOT NULL,
+  Easting               INTEGER NOT NULL,
+  Northing              INTEGER NOT NULL,
+  CreationDateTime      TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime  TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber        INTEGER,
+  Modification          NAME,
+  PRIMARY KEY (AtcoCode)
+);
+
+CREATE INDEX FerryReferences_c ON naptan.FerryReferences(FerryCode);
+CREATE INDEX FerryReferences_n ON naptan.FerryReferences(Name);
+
+-- geometry
+SELECT addgeometrycolumn( '', 'naptan', 'ferryreferences', 'geom', 27700, 'POINT', 2, true);
+CREATE INDEX FerryReferences_geom ON naptan.FerryReferences USING GIST (geom);
+
+-- ================================================================================
+-- railreference
+-- ================================================================================
+DROP TABLE IF EXISTS naptan.RailReferences CASCADE;
+
+CREATE TABLE naptan.RailReferences (
+  AtcoCode              NAME NOT NULL,
+  TiplocCode            NAME,
+  CrsCode               CHAR(3),
+  StationName           NAME,
+  StationNameLang       NAME,
+  GridType              NAME,
+  Easting               INTEGER NOT NULL,
+  Northing              INTEGER NOT NULL,
+  CreationDateTime      TIMESTAMP WITHOUT TIME ZONE,
+  ModificationDateTime  TIMESTAMP WITHOUT TIME ZONE,
+  RevisionNumber        INTEGER,
+  Modification          NAME,
+  PRIMARY KEY (AtcoCode)
+);
+
+CREATE INDEX RailReferences_t ON naptan.RailReferences(TiplocCode);
+CREATE INDEX RailReferences_c ON naptan.RailReferences(CrsCode);
+CREATE INDEX RailReferences_n ON naptan.RailReferences(lower(StationName));
+
+-- geometry
+SELECT addgeometrycolumn( '', 'naptan', 'railreferences', 'geom', 27700, 'POINT', 2, true);
+CREATE INDEX RailReferences_geom ON naptan.RailReferences USING GIST (geom);
 
 -- ================================================================================
 -- stops
