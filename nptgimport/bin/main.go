@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-  err := kernel.Launch( &nptgimport.NptgImport{} )
+  err := kernel.Launch( &kernel.MemUsage{}, &nptgimport.NptgImport{} )
   if err != nil {
     log.Fatal( err )
   }

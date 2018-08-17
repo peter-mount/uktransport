@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-  err := kernel.Launch( &naptanimport.NaptanImport{} )
+  err := kernel.Launch( &kernel.MemUsage{}, &naptanimport.NaptanImport{} )
   if err != nil {
     log.Fatal( err )
   }
