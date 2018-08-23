@@ -6,9 +6,6 @@ repository= 'area51/'
 // image prefix
 imagePrefix = 'uktransport'
 
-// The git repo / package prefix
-gitRepoPrefix = 'github.com/peter-mount/nre-feeds/'
-
 // The image version, master branch is latest in docker
 version=BRANCH_NAME
 if( version == 'master' ) {
@@ -18,23 +15,20 @@ if( version == 'master' ) {
 // The architectures to build, in format recognised by docker
 architectures = [ 'amd64', 'arm64v8' ]
 
-// The services to build
-services = [ 'darwinref', 'darwintt', 'darwind3', 'ldb', 'darwinkb' ]
-
 // Temp docker image name
 tempImage = 'temp/' + imagePrefix + ':' + version
 
 // The docker image name
 // architecture can be '' for multiarch images
 def dockerImage = {
-  service, architecture -> repository + imagePrefix +
-    ':' + service +
-    ( architecture=='' ? '' : ('-' + architecture) ) +
-    '-' + version
+  architecture -> repository + imagePrefix +
+    ':' +
+    ( architecture=='' ? '' : (architecture + '-') ) +
+    version
 }
 
 // The multi arch image name
-def multiImage = { service -> repository + imagePrefix + ':' + service + '-' + version }
+multiImage = repository + imagePrefix + ':' + version
 
 // The go arch
 def goarch = {
@@ -73,24 +67,12 @@ properties([
   ])
 ])
 
-// Run tests against a suite or library
-def runTest = {
-  test -> sh 'docker run -i --rm ' + tempImage + ' go test -v ' + gitRepoPrefix + test
-}
-
-def dockerFile = { architecture, service -> "Dockerfile." + service + '.' + architecture }
-
 // Build a service for a specific architecture
 def buildArch = {
-  architecture, service ->
-    // Modify Dockerfile so the final image has the correct entrypoint
-    sh 'sed "s/@@entrypoint@@/' + service + '/g" Dockerfile >' + dockerFile( architecture, service )
-
+  architecture ->
     sh 'docker build' +
-      ' -t ' + dockerImage( service, architecture ) +
-      ' -f ' + dockerFile( architecture, service ) +
+      ' -t ' + dockerImage( architecture ) +
       ' --build-arg skipTest=true' +
-      ' --build-arg service=' + service +
       ' --build-arg arch=' + architecture +
       ' --build-arg goos=linux' +
       ' --build-arg goarch=' + goarch( architecture ) +
@@ -99,34 +81,31 @@ def buildArch = {
 
     if( repository != '' ) {
       // Push all built images relevant docker repository
-      sh 'docker push ' + dockerImage( service, architecture )
+      sh 'docker push ' + dockerImage( architecture )
     } // repository != ''
 }
 
-def manifests = {
-  service -> manifests = architectures.collect { architecture -> dockerImage( service, architecture ) }
-  manifests.join(' ')
-}
+manifests = architectures.collect { architecture -> dockerImage( architecture ) }
+manifests = manifests.join(' ')
 
 // Deploy multi-arch image for a service
 def multiArchService = {
-  service ->
+  tmp ->
     // Create/amend the manifest with our architectures
-    sh 'docker manifest create -a ' + multiImage( service ) + ' ' + manifests( service )
+    sh 'docker manifest create -a ' + multiImage + ' ' + manifests
 
     // For each architecture annotate them to be correct
     architectures.each {
       architecture -> sh 'docker manifest annotate' +
         ' --os linux' +
         ' --arch ' + goarch( architecture ) +
-        ' ' + multiImage( service ) +
-        ' ' + dockerImage( service, architecture )
+        ' ' + multiImage +
+        ' ' + dockerImage( architecture )
     }
 
     // Publish the manifest
-    sh 'docker manifest push -p ' + multiImage( service )
+    sh 'docker manifest push -p ' + multiImage
 }
-
 
 // Now build everything on one node
 node('AMD64') {
@@ -141,53 +120,36 @@ node('AMD64') {
   }
 
   // Run unit tests
+  /*
   stage("Run Tests") {
+    def runTest = {
+      test -> sh 'docker run -i --rm ' + tempImage + ' go test -v ' + test
+    }
     parallel (
       'darwind3': { runTest( 'darwind3' ) },
       'darwinref': { runTest( 'darwinref' ) },
       'ldb': { runTest( 'ldb' ) },
-      'util': { runTest( 'util' ) },
+      'util': { runTest( 'util' ) }
     )
+    //sh 'docker build -t ' + tempImage + ' --target test .'
   }
+  */
 
-  // Run issue tests separately as these will grow over time
-  stage( "Test Issues" ) {
-    runTest( 'issues' )
-  }
-
-  services.each {
-    service -> stage( service ) {
-      parallel (
-        'amd64': {
-          buildArch( "amd64", service )
-        },
-        'arm64v8': {
-          buildArch( "arm64v8", service )
-        }
-      )
-    }
+  stage( 'Build' ) {
+    parallel (
+      'amd64': {
+        buildArch( "amd64" )
+      },
+      'arm64v8': {
+        buildArch( "arm64v8" )
+      }
+    )
   }
 
   // Stages valid only if we have a repository set
   if( repository != '' ) {
     stage( "Multiarch Image" ) {
-      parallel(
-        'darwinref': {
-          multiArchService( 'darwinref' )
-        },
-        'darwintt': {
-          multiArchService( 'darwintt' )
-        },
-        'darwind3': {
-          multiArchService( 'darwind3' )
-        },
-        'ldb': {
-          multiArchService( 'ldb' )
-        },
-        'darwinkb': {
-          multiArchService( 'darwinkb' )
-        }
-      )
+      multiArchService( '' )
     }
   }
 
