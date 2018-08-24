@@ -61,7 +61,12 @@ RUN CGO_ENABLED=0 \
     compile.sh /dest
 
 # ============================================================
-# Finally build the final runtime container for the specific
-# microservice
-FROM area51/scratch-base:latest
-COPY --from=compiler /dest/ /
+# Finally build the final runtime container
+FROM alpine
+
+# The golang alpine image is missing git so ensure we have additional tools
+RUN apk add --no-cache \
+      curl \
+      tzdata
+
+COPY --from=compiler /dest/ /usr/local/bin/
