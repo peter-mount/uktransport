@@ -4,6 +4,7 @@ import (
   "flag"
   "github.com/peter-mount/golib/kernel"
   "github.com/peter-mount/golib/kernel/db"
+  "github.com/peter-mount/golib/sqlutils"
   "github.com/peter-mount/uktransport/lib"
 )
 
@@ -15,7 +16,8 @@ type NptgImport struct {
 
   // The DB
   db           *db.DBService
-  sql          *lib.SqlService
+  sql          *sqlutils.SchemaImport
+  csv          *sqlutils.CSVImporter
   zipImporter  *lib.ZipImporter
 }
 
@@ -34,25 +36,30 @@ func (a *NptgImport) Init( k *kernel.Kernel ) error {
   }
   a.db = (dbservice).(*db.DBService)
 
-  sqlservice, err := k.AddService( &lib.SqlService{} )
+  sqlservice, err := k.AddService( sqlutils.NewSchemaImport( "nptg", lib.AssetString, lib.AssetNames ) )
   if err != nil {
     return err
   }
-  a.sql = (sqlservice).(*lib.SqlService)
-  a.sql.Schema = "nptg"
+  a.sql = (sqlservice).(*sqlutils.SchemaImport)
+
+  csvservice, err := k.AddService( sqlutils.NewCSVImporter( "nptg" ) )
+  if err != nil {
+    return err
+  }
+  a.csv = (csvservice).(*sqlutils.CSVImporter)
 
   zipImporter, err := k.AddService( lib.NewZipImporter(
     a.zipFile(),
     lib.ZipImportHandlerMap{
-      "AdjacentLocality.csv": a.sql.CSVImport,
-      "AdminAreas.csv": a.sql.CSVImport,
-      "Districts.csv": a.sql.CSVImport,
+      "AdjacentLocality.csv": a.csv.Import,
+      "AdminAreas.csv": a.csv.Import,
+      "Districts.csv": a.csv.Import,
       "Localities.csv": a.localities,
-      "LocalityAlternativeNames.csv": a.sql.CSVImport,
-      "LocalityHierarchy.csv": a.sql.CSVImport,
+      "LocalityAlternativeNames.csv": a.csv.Import,
+      "LocalityHierarchy.csv": a.csv.Import,
       "PlusbusMapping.csv": a.plusBusMapping,
-      "PlusbusZones.csv": a.sql.CSVImport,
-      "Regions.csv": a.sql.CSVImport,
+      "PlusbusZones.csv": a.csv.Import,
+      "Regions.csv": a.csv.Import,
     } ) )
   if err != nil {
     return err

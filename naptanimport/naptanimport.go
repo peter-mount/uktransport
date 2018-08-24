@@ -5,6 +5,7 @@ import (
   "flag"
   "github.com/peter-mount/golib/kernel"
   "github.com/peter-mount/golib/kernel/db"
+  "github.com/peter-mount/golib/sqlutils"
   "github.com/peter-mount/uktransport/lib"
 )
 
@@ -16,7 +17,8 @@ type NaptanImport struct {
 
   // The DB
   db           *db.DBService
-  sql          *lib.SqlService
+  sql          *sqlutils.SchemaImport
+  csv          *sqlutils.CSVImporter
   zipImporter  *lib.ZipImporter
 }
 
@@ -35,22 +37,27 @@ func (a *NaptanImport) Init( k *kernel.Kernel ) error {
   }
   a.db = (dbservice).(*db.DBService)
 
-  sqlservice, err := k.AddService( &lib.SqlService{} )
+  sqlservice, err := k.AddService( sqlutils.NewSchemaImport( "naptan", lib.AssetString, lib.AssetNames ) )
   if err != nil {
     return err
   }
-  a.sql = (sqlservice).(*lib.SqlService)
-  a.sql.Schema = "naptan"
+  a.sql = (sqlservice).(*sqlutils.SchemaImport)
+
+  csvservice, err := k.AddService( sqlutils.NewCSVImporter( "naptan" ) )
+  if err != nil {
+    return err
+  }
+  a.csv = (csvservice).(*sqlutils.CSVImporter)
 
   zipImporter, err := k.AddService( lib.NewZipImporter(
     a.zipFile(),
     lib.ZipImportHandlerMap{
-      "AirReferences.csv": a.sql.CSVImport,
-      "AlternativeDescriptors.csv": a.sql.CSVImport,
-      "AreaHierarchy.csv": a.sql.CSVImport,
-      "RailReferences.csv": a.sql.CSVImport,
-      "Stops.csv": a.sql.CSVImport,
-      "StopPlusbusZones.csv": a.sql.CSVImport,
+      "AirReferences.csv": a.csv.Import,
+      "AlternativeDescriptors.csv": a.csv.Import,
+      "AreaHierarchy.csv": a.csv.Import,
+      "RailReferences.csv": a.csv.Import,
+      "Stops.csv": a.csv.Import,
+      "StopPlusbusZones.csv": a.csv.Import,
     } ) )
   if err != nil {
     return err
