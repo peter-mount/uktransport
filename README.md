@@ -9,15 +9,21 @@ Instructions on how to use this image will appear in the wiki.
 
 ## Available commands
 
-### cifimport
-cifimport handles retrieval and importing of the Network Rail CIF timetable, providing both schedules and tiploc
+### cif
+#### cifimport
+cifimport handles the importing of the Network Rail CIF timetable, providing both schedules and tiploc
 entries describing the UK Rail Network. This is from the [nrod-cif](https://github.com/peter-mount/nrod-cif) project.
 
-### naptanimport
+#### cifretrieve
+cifretrieve handles the retrieval Network Rail CIF timetable in CF format, providing both schedules and tiploc
+entries describing the UK Rail Network. This is from the [nrod-cif](https://github.com/peter-mount/nrod-cif) project.
+
+### NaPTAN
+#### naptanimport
 naptanimport retrieves and imports the NaPTAN dataset directly from the UK's Department of Transport.
 It contains details about the locations of Airports, Railway stations, Bus stops for the entire country.
 
-### nptgimport
+#### nptgimport
 nptgimport retrieves and imports the NPTG dataset directly from the UK's Department of Transport.
 This dataset contains details about localities within the UK, for example where a specific town is located.
 It also includes geographic coverage of the  PlusBus zones (a type of Bus ticket valid with Rail tickets).
