@@ -26,18 +26,8 @@ RUN apk add --no-cache \
     mkdir -p /dest/bin
 
 # ============================================================
-# This stage retrieves prebuilt binaries from other containers
-# That we want to include in this image
-FROM golang as bins
-
-# cifimport
-COPY --from=area51/nrod-cif:latest /bin/cifimport /dest/bin/
-COPY --from=area51/nrod-cif:latest /bin/cifretrieve /dest/bin/
-COPY --from=area51/dataretriever:latest /usr/local/bin/dataretriever /dest/bin/
-
-# ============================================================
 # This stage installs the required libraries
-FROM bins as build
+FROM golang as build
 
 RUN go get -v \
       github.com/lib/pq \
@@ -80,6 +70,16 @@ RUN for bin in naptanimport nptgimport; \
     done
 
 # ============================================================
+# This stage retrieves prebuilt binaries from other containers
+# That we want to include in this image
+FROM compiler as bins
+
+# cifimport
+COPY --from=area51/nrod-cif:latest /bin/cifimport /dest/bin/
+COPY --from=area51/nrod-cif:latest /bin/cifretrieve /dest/bin/
+COPY --from=area51/dataretriever:latest /usr/local/bin/dataretriever /dest/bin/
+
+# ============================================================
 # Finally build the final runtime container
 FROM alpine
 
@@ -87,4 +87,4 @@ RUN apk add --no-cache \
       curl \
       tzdata
 
-COPY --from=compiler /dest/ /usr/local/
+COPY --from=bins /dest/ /usr/local/

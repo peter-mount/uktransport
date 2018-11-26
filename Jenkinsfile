@@ -69,20 +69,26 @@ properties([
 
 // Build a service for a specific architecture
 def buildArch = {
-  architecture ->
-    sh 'docker build' +
-      ' -t ' + dockerImage( architecture ) +
-      ' --build-arg skipTest=true' +
-      ' --build-arg arch=' + architecture +
-      ' --build-arg goos=linux' +
-      ' --build-arg goarch=' + goarch( architecture ) +
-      ' --build-arg goarm=' + goarm( architecture ) +
-      ' .'
+  nodetag, architecture ->
+    node( nodetag ) {
+      stage( "docker" ) {
+        checkout scm
 
-    if( repository != '' ) {
-      // Push all built images relevant docker repository
-      sh 'docker push ' + dockerImage( architecture )
-    } // repository != ''
+        sh 'docker build' +
+        ' -t ' + dockerImage( architecture ) +
+        ' --build-arg skipTest=true' +
+        ' --build-arg arch=' + architecture +
+        ' --build-arg goos=linux' +
+        ' --build-arg goarch=' + goarch( architecture ) +
+        ' --build-arg goarm=' + goarm( architecture ) +
+        ' .'
+
+        if( repository != '' ) {
+        // Push all built images relevant docker repository
+        sh 'docker push ' + dockerImage( architecture )
+        } // repository != ''
+      }
+    }
 }
 
 manifests = architectures.collect { architecture -> dockerImage( architecture ) }
@@ -107,50 +113,21 @@ def multiArchService = {
     sh 'docker manifest push -p ' + multiImage
 }
 
-// Now build everything on one node
-node('AMD64') {
-  stage( "Checkout" ) {
-    checkout scm
-
-    // Prepare the go base image with the source and libraries
-    sh 'docker pull golang:alpine'
-
-    // Run up to the source target so libraries are checked out
-    sh 'docker build -t ' + tempImage + ' --target source .'
+// Build on each platform
+parallel (
+  'amd64': {
+    buildArch( "AMD64", "amd64" )
+  },
+  'arm64v8': {
+    buildArch( "ARM64", "arm64v8" )
   }
+)
 
-  // Run unit tests
-  /*
-  stage("Run Tests") {
-    def runTest = {
-      test -> sh 'docker run -i --rm ' + tempImage + ' go test -v ' + test
-    }
-    parallel (
-      'darwind3': { runTest( 'darwind3' ) },
-      'darwinref': { runTest( 'darwinref' ) },
-      'ldb': { runTest( 'ldb' ) },
-      'util': { runTest( 'util' ) }
-    )
-    //sh 'docker build -t ' + tempImage + ' --target test .'
-  }
-  */
-
-  stage( 'Build' ) {
-    parallel (
-      'amd64': {
-        buildArch( "amd64" )
-      },
-      'arm64v8': {
-        buildArch( "arm64v8" )
-      }
-    )
-  }
-
-  // Stages valid only if we have a repository set
-  if( repository != '' ) {
+// The multiarch build only if we have a repository set
+if( repository != '' ) {
+  node( 'AMD64' ) {
     stage( "Multiarch Image" ) {
       multiArchService( '' )
     }
   }
-
 }
