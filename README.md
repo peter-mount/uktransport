@@ -1,13 +1,14 @@
 # uktransport
 
-This docker image contains a suite of command line utilities that support the retrieval of various UK Transport OpenData
-and the importing of that data into a PostGIS database.
+This docker image contains a suite of command line utilities that support the retrieval of various UK Transport OpenData.
+
+Some of these utilities will write the retrieved data into a PostGIS database whilst others pass that data to a local RabbitMQ server.
 
 We use PostGIS rather than plain PostgreSQL as some of this data is geographic in nature.
 
 Instructions on how to use this image will appear in the wiki.
 
-## Available commands
+## Data retrieval commands
 
 ### cif
 #### cifimport
@@ -27,3 +28,14 @@ It contains details about the locations of Airports, Railway stations, Bus stops
 nptgimport retrieves and imports the NPTG dataset directly from the UK's Department of Transport.
 This dataset contains details about localities within the UK, for example where a specific town is located.
 It also includes geographic coverage of the  PlusBus zones (a type of Bus ticket valid with Rail tickets).
+
+## Data manipulation commands
+
+### dataretriever
+
+dataretriever is a generic tool to retrieve data and pass it to a RabbitMQ instance.
+This is from the [dataretriever](https://github.com/peter-mount/dataretriever) project.
+
+It currently has two modes of operation:
+* Retrieve via http/https at regular intervals data and submit the response as a message.
+* Connect to a remote message broker using Stomp and submit messages to RabbitMQ. For Rail open data this suppots the NROD feed from Network Rail but *not* the Darwin Push Port feed.

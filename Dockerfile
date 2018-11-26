@@ -33,6 +33,7 @@ FROM golang as bins
 # cifimport
 COPY --from=area51/nrod-cif:latest /bin/cifimport /dest/bin/
 COPY --from=area51/nrod-cif:latest /bin/cifretrieve /dest/bin/
+COPY --from=area51/dataretriever:latest /usr/local/bin/dataretriever /dest/bin/
 
 # ============================================================
 # This stage installs the required libraries

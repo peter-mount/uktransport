@@ -13,9 +13,8 @@
 #
 
 IMAGE=$1
-SERVICE=$2
-ARCH=$3
-VERSION=$4
+ARCH=$2
+VERSION=$3
 
 # Resolve the architecture
 case $ARCH in
@@ -43,22 +42,13 @@ esac
 GOOS=linux
 
 # The actual image being built
-TAG=${IMAGE}:${SERVICE}-${ARCH}-${VERSION}
-
-# Now customise Dockerfile
-DOCKERFILE=Dockerfile.${SERVICE}.${GOOS}.${ARCH}
-(
-  echo "# GENERATED $DOCKERFILE"
-  sed "s/@@entrypoint@@/${SERVICE}/g" Dockerfile
-) >$DOCKERFILE
+TAG=${IMAGE}:${ARCH}-${VERSION}
 
 echo "Building $SERVICE image $TAG on $ARCH"
 
 docker build \
   --force-rm=true \
   -t ${TAG} \
-  -f ${DOCKERFILE} \
-  --build-arg service=${SERVICE} \
   --build-arg arch=${ARCH} \
   --build-arg goos=${GOOS} \
   --build-arg goarch=${GOARCH} \
