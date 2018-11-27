@@ -41,7 +41,7 @@ if( version == 'master' ) {
 // Unused for jobs that don't generate artifacts but get the
 // JOB_NAME consists of the job name but if it ends with the branch name then
 // remove that to get the full name
-jobname=JOB_NAME.split('/')
+jobname=env.JOB_NAME.split('/')
 if( jobname[-1] == BRANCH_NAME ) {
   jobname.removeLast()
 }
