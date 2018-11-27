@@ -51,7 +51,7 @@ then
   repoName="$(basename $repoPath)-${VERSION}"
   if [ -n "${BUILD_NUMBER}" ]
   then
-    repoName="${repoName}.${BUILD_NUMBER}"
+    repoName="${repoName}-${ARCH}.${BUILD_NUMBER}"
   fi
 
   CMD="$CMD --build-arg uploadPath=${UPLOAD_PATH}/${repoPath}"
