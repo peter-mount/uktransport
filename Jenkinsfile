@@ -48,9 +48,9 @@ def pushImage = {
 // Build a service for a specific architecture
 def buildArch = {
   nodetag, architecture -> node( nodetag ) {
-    withEnv([
-      UPLOAD_CRED = credentials( 'artifact-publisher' )
-    ]) {
+    withCredentials([
+      usernameColonPassword(credentialsId: 'artifact-publisher', variable: 'UPLOAD_CRED')]
+    ) {
       stage( "docker" ) {
         checkout scm
 
