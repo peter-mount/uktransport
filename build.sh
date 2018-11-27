@@ -33,10 +33,11 @@ CMD="$CMD --build-arg goarch=$(goarch $ARCH)"
 CMD="$CMD --build-arg goarm=$(goarm $ARCH)"
 
 # Upload a tar file as part of the build
-if [ -n "${UPLOAD_CRED}" -a -n "${UPLOAD_PATH}" ]
+if [ -n "${UPLOAD_CRED}" -a -n "${UPLOAD_PATH}" -a -n "${UPLOAD_NAME}" ]
 then
   CMD="$CMD --build-arg uploadCred=${UPLOAD_CRED}"
   CMD="$CMD --build-arg uploadPath=${UPLOAD_PATH}"
+  CMD="$CMD --build-arg uploadName=${UPLOAD_NAME}"
 fi
 
 CMD="$CMD ."

@@ -84,10 +84,14 @@ COPY --from=area51/dataretriever:latest /usr/local/bin/dataretriever /dest/bin/
 FROM bins AS upload
 ARG uploadPath=
 ARG uploadCred=
-RUN if [ -n "${uploadCred}" -a -n "${uploadPath}" ] ;\
+ARG uploadName=
+RUN if [ -n "${uploadCred}" -a -n "${uploadPath}" -a -n "${uploadName}"] ;\
     then \
-      cd /dest/bin; tar cvzpf /tmp/uktransport.tgz * && \
-      curl -u ${uploadCred} --upload-file /tmp/uktransport.tgz ${uploadPath}; \
+      cd /dest/bin; \
+      tar cvzpf /tmp/${uploadName}.tgz * && \
+      zip /tmp/${uploadName}.zip * && \
+      curl -u ${uploadCred} --upload-file /tmp/uktransport.tgz ${uploadPath} && \
+      curl -u ${uploadCred} --upload-file /tmp/uktransport.zip ${uploadPath}; \
     fi
 
 # ============================================================
