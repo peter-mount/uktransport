@@ -57,8 +57,8 @@ for( architecture in architectures ) {
 
           sh './build.sh ' + imageTag + ' ' + arch + ' ' + version
 
-          tag -> if( repository != '' ) {
-            sh 'docker push ' + tag
+          if( repository != '' ) {
+            sh 'docker push ' + imageTag + ':' + arch + '-' + version
           }
         }
       }
