@@ -33,6 +33,9 @@ execute $CMD
 
 for arch in $@
 do
+  # ensure this node has the latest image for this architecture
+  execute "docker pull $(dockerImage $arch)"
+
   CMD="docker manifest annotate"
   CMD="$CMD --os linux"
   CMD="$CMD --arch $(goarch $arch)"
