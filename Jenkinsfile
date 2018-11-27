@@ -25,8 +25,11 @@ imagePrefix = 'uktransport'
 // The image tag (i.e. repository/image but no version)
 imageTag=repository + imagePrefix
 
-// The architectures to build, in format recognised by docker
-architectures = [ 'amd64', 'arm64v8' ]
+// The architectures to build. This is an array of [node,arch]
+architectures = [
+ ['AMD64', 'amd64'],
+ ['ARM64', 'arm64v8']
+]
 
 // The image version based on the branch name - master branch is latest in docker
 version=BRANCH_NAME
@@ -38,39 +41,31 @@ if( version == 'master' ) {
 // Do not modify anything below this point
 // ======================================================================
 
-// Push an image if we have a repository set
-def pushImage = {
-  tag -> if( repository != '' ) {
-    sh 'docker push ' + tag
-  }
-}
+// Build each architecture on each node in parallel
+def builders = [:]
+for( architecture in architectures ) {
+  // Need to bind these before the closure, cannot access these as architecture[x]
+  def nodeId = architecture[0]
+  def arch = architecture[1]
+  builders[nodeId] = {
+    node( nodeId ) {
+      withCredentials([
+        usernameColonPassword(credentialsId: 'artifact-publisher', variable: 'UPLOAD_CRED')]
+      ) {
+        stage( "docker" ) {
+          checkout scm
 
-// Build a service for a specific architecture
-def buildArch = {
-  nodetag, architecture -> node( nodetag ) {
-    withCredentials([
-      usernameColonPassword(credentialsId: 'artifact-publisher', variable: 'UPLOAD_CRED')]
-    ) {
-      stage( "docker" ) {
-        checkout scm
+          sh './build.sh ' + imageTag + ' ' + arch + ' ' + version
 
-        sh './build.sh ' + imageTag + ' ' + architecture + ' ' + version
-
-        pushImage( imageTag + ':' + architecture + '-' + version )
+          tag -> if( repository != '' ) {
+            sh 'docker push ' + tag
+          }
+        }
       }
     }
   }
 }
-
-// Build on each platform
-parallel (
-  'amd64': {
-    buildArch( "AMD64", "amd64" )
-  },
-  'arm64v8': {
-    buildArch( "ARM64", "arm64v8" )
-  }
-)
+parallel builders
 
 // The multiarch build only if we have a repository set
 if( repository != '' ) {
@@ -79,7 +74,7 @@ if( repository != '' ) {
       sh './multiarch.sh' +
         ' ' + imageTag +
         ' ' + version +
-        ' ' + architectures.join(' ')
+        ' ' + architectures.collect { it[1] } .join(' ')
     }
   }
 }
