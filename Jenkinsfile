@@ -34,7 +34,7 @@ if( version == 'master' ) {
   version = 'latest'
 }
 
-# Push an image if we have a repository set
+// Push an image if we have a repository set
 def pushImage = {
   tag -> if( repository != '' ) {
     sh 'docker push ' + tag
