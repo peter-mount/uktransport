@@ -53,7 +53,7 @@ stage( 'Build' ) {
         withCredentials([
           usernameColonPassword(credentialsId: 'artifact-publisher', variable: 'UPLOAD_CRED')]
         ) {
-          stage( "docker" ) {
+          stage( arch ) {
             checkout scm
 
             sh './build.sh ' + imageTag + ' ' + arch + ' ' + version
