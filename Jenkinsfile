@@ -28,6 +28,9 @@ imageTag=repository + imagePrefix
 // The architectures to build, in format recognised by docker
 architectures = [ 'amd64', 'arm64v8' ]
 
+stage('Env') {
+  sh 'printenv'
+}
 // The image version based on the branch name - master branch is latest in docker
 version=BRANCH_NAME
 if( version == 'master' ) {
