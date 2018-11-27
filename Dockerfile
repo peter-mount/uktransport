@@ -85,7 +85,7 @@ FROM bins AS upload
 ARG uploadPath=
 ARG uploadCred=
 ARG uploadName=
-RUN if [ -n "${uploadCred}" -a -n "${uploadPath}" -a -n "${uploadName}"] ;\
+RUN if [ -n "${uploadCred}" -a -n "${uploadPath}" -a -n "${uploadName}" ] ;\
     then \
       cd /dest/bin; \
       tar cvzpf /tmp/${uploadName}.tgz * && \
