@@ -90,8 +90,8 @@ RUN if [ -n "${uploadCred}" -a -n "${uploadPath}" -a -n "${uploadName}"] ;\
       cd /dest/bin; \
       tar cvzpf /tmp/${uploadName}.tgz * && \
       zip /tmp/${uploadName}.zip * && \
-      curl -u ${uploadCred} --upload-file /tmp/uktransport.tgz ${uploadPath} && \
-      curl -u ${uploadCred} --upload-file /tmp/uktransport.zip ${uploadPath}; \
+      curl -u ${uploadCred} --upload-file /tmp/${uploadName}.tgz ${uploadPath} && \
+      curl -u ${uploadCred} --upload-file /tmp/${uploadName}.zip ${uploadPath}; \
     fi
 
 # ============================================================
