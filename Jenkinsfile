@@ -76,13 +76,10 @@ parallel (
 if( repository != '' ) {
   node( 'AMD64' ) {
     stage( "Multiarch Image" ) {
-
       sh './multiarch.sh' +
         ' ' + imageTag +
         ' ' + version +
         ' ' + architectures.join(' ')
-
-      pushImage( imageTag + ':' + version )
     }
   }
 }
