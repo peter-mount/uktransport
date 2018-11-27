@@ -48,6 +48,9 @@ then
     repoPath=$(dirname $repoPath)
   fi
 
+  # add version to the path
+  repoPath="${repoPath}/${VERSION}"
+
   repoName="$(basename $repoPath)-${ARCH}-${VERSION}"
   if [ -n "${BUILD_NUMBER}" ]
   then
