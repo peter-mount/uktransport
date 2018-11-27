@@ -48,16 +48,13 @@ then
     repoPath=$(dirname $repoPath)
   fi
 
-  # add version to the path
-  repoPath="${repoPath}/${VERSION}"
-
   repoName="$(basename $repoPath)-${ARCH}-${VERSION}"
   if [ -n "${BUILD_NUMBER}" ]
   then
     repoName="${repoName}.${BUILD_NUMBER}"
   fi
 
-  CMD="$CMD --build-arg uploadPath=${UPLOAD_PATH}/${repoPath}"
+  CMD="$CMD --build-arg uploadPath=${UPLOAD_PATH}/${repoPath}/${VERSION}"
   CMD="$CMD --build-arg uploadName=${repoName}"
 fi
 
