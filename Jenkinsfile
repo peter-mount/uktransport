@@ -42,30 +42,32 @@ if( version == 'master' ) {
 // ======================================================================
 
 // Build each architecture on each node in parallel
-def builders = [:]
-for( architecture in architectures ) {
-  // Need to bind these before the closure, cannot access these as architecture[x]
-  def nodeId = architecture[0]
-  def arch = architecture[1]
-  builders[nodeId] = {
-    node( nodeId ) {
-      withCredentials([
-        usernameColonPassword(credentialsId: 'artifact-publisher', variable: 'UPLOAD_CRED')]
-      ) {
-        stage( "docker" ) {
-          checkout scm
+stage( 'Build' ) {
+  def builders = [:]
+  for( architecture in architectures ) {
+    // Need to bind these before the closure, cannot access these as architecture[x]
+    def nodeId = architecture[0]
+    def arch = architecture[1]
+    builders[arch] = {
+      node( nodeId ) {
+        withCredentials([
+          usernameColonPassword(credentialsId: 'artifact-publisher', variable: 'UPLOAD_CRED')]
+        ) {
+          stage( "docker" ) {
+            checkout scm
 
-          sh './build.sh ' + imageTag + ' ' + arch + ' ' + version
+            sh './build.sh ' + imageTag + ' ' + arch + ' ' + version
 
-          if( repository != '' ) {
-            sh 'docker push ' + imageTag + ':' + arch + '-' + version
+            if( repository != '' ) {
+              sh 'docker push ' + imageTag + ':' + arch + '-' + version
+            }
           }
         }
       }
     }
   }
+  parallel builders
 }
-parallel builders
 
 // The multiarch build only if we have a repository set
 if( repository != '' ) {
