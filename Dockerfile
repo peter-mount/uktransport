@@ -19,7 +19,8 @@ FROM golang:alpine as golang
 RUN apk add --no-cache \
       curl \
       git \
-      tzdata &&\
+      tzdata \
+      zip &&\
     go get -v github.com/kevinburke/go-bindata &&\
     go build -o /usr/local/bin/go-bindata \
       github.com/kevinburke/go-bindata/go-bindata &&\
