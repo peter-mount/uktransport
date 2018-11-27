@@ -51,5 +51,5 @@ function goarm() {
 # Resolve the image for an architecture
 function dockerImage() {
   ARCH=$1
-  echo ${IMAGE}:$(goarch $ARCH)-${VERSION}
+  echo ${IMAGE}:${ARCH}-${VERSION}
 }
