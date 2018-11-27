@@ -33,11 +33,29 @@ CMD="$CMD --build-arg goarch=$(goarch $ARCH)"
 CMD="$CMD --build-arg goarm=$(goarm $ARCH)"
 
 # Upload a tar file as part of the build
-if [ -n "${UPLOAD_CRED}" -a -n "${UPLOAD_PATH}" -a -n "${UPLOAD_NAME}" ]
+if [ -n "${UPLOAD_CRED}" -a -n "${JOB_NAME}" ]
 then
   CMD="$CMD --build-arg uploadCred=${UPLOAD_CRED}"
-  CMD="$CMD --build-arg uploadPath=${UPLOAD_PATH}"
-  CMD="$CMD --build-arg uploadName=${UPLOAD_NAME}"
+
+  if [ -z "${UPLOAD_PATH}" ]
+  then
+    UPLOAD_PATH=https://nexus.area51.onl/repository/snapshots/
+  fi
+
+  repoPath=$JOB_NAME
+  if [ "$(basename $repoPath)" = "${BRANCH_NAME}" ]
+  then
+    repoPath=$(dirname $repoPath)
+  fi
+
+  repoName="$(basename $repoPath)-${VERSION}"
+  if [ -n "${BUILD_NUMBER}" ]
+  then
+    repoName="${repoName}.${BUILD_NUMBER}"
+  fi
+
+  CMD="$CMD --build-arg uploadPath=${UPLOAD_PATH}/${repoPath}"
+  CMD="$CMD --build-arg uploadName=${repoName}"
 fi
 
 CMD="$CMD ."

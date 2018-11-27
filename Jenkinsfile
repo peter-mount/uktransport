@@ -38,19 +38,6 @@ if( version == 'master' ) {
 // Do not modify anything below this point
 // ======================================================================
 
-// Unused for jobs that don't generate artifacts but get the
-// JOB_NAME consists of the job name but if it ends with the branch name then
-// remove that to get the full name
-jobname=env.JOB_NAME.split('/')
-if( jobname[-1] == BRANCH_NAME ) {
-  jobname.removeLast()
-}
-
-// The artifact path in our repository
-repoPath='https://nexus.area51.onl/repository/snapshots/' + jobname.join('/')
-// The file name sans any file suffix, contains job name, branch name & build number
-repoName=jobname[-1] + '-' + BRANCH_NAME + '.' + BUILD_NUMBER
-
 // Push an image if we have a repository set
 def pushImage = {
   tag -> if( repository != '' ) {
