@@ -16,7 +16,7 @@
 IMAGE=$1
 shift
 
-VERSION=$2
+VERSION=$1
 shift
 
 # The final multiarch image
