@@ -22,7 +22,7 @@ repository= 'area51/'
 // image prefix - project specific
 imagePrefix = 'uktransport'
 
-# The image tag (i.e. repository/image but no version)
+// The image tag (i.e. repository/image but no version)
 imageTag=repository + imagePrefix
 
 // The architectures to build, in format recognised by docker
