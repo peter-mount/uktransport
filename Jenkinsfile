@@ -48,17 +48,12 @@ def pushImage = {
 // Build a service for a specific architecture
 def buildArch = {
   nodetag, architecture -> node( nodetag ) {
-    withEnv([
-      'UPLOAD_PATH=' + repoPath,
-      'UPLOAD_NAME=' + repoName
-    ]) {
-      stage( "docker" ) {
-        checkout scm
+    stage( "docker" ) {
+      checkout scm
 
-        sh './build.sh ' + imageTag + ' ' + architecture + ' ' + version
+      sh './build.sh ' + imageTag + ' ' + architecture + ' ' + version
 
-        pushImage( imageTag + ':' + architecture + '-' + version )
-      }
+      pushImage( imageTag + ':' + architecture + '-' + version )
     }
   }
 }
