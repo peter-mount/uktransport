@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Script to run a build for a specific microservice and platform.
 #
@@ -16,43 +16,21 @@ IMAGE=$1
 ARCH=$2
 VERSION=$3
 
-# Resolve the architecture
-case $ARCH in
-  amd64)
-    GOARCH=amd64
-    ;;
-  arm32v6)
-    GOARCH=arm
-    GOARM=6
-    ;;
-  arm32v7)
-    GOARCH=arm
-    GOARM=7
-    ;;
-  arm64v8)
-    GOARCH=arm64
-    ;;
-  *)
-    echo "Unsupported architecture $ARCH"
-    exit 1
-    ;;
-esac
-
-# For now just support Linux
-GOOS=linux
-
 # The actual image being built
 TAG=${IMAGE}:${ARCH}-${VERSION}
 
-echo "Building $SERVICE image $IMAGE on $ARCH"
+. functions.sh
 
 CMD="docker build --force-rm=true"
-CMD="$CMD -t ${IMAGE}"
+CMD="$CMD -t ${TAG}"
 
 CMD="$CMD --build-arg arch=${ARCH}"
-CMD="$CMD --build-arg goos=${GOOS}"
-CMD="$CMD --build-arg goarch=${GOARCH}"
-CMD="$CMD --build-arg goarm=${GOARM}"
+
+# For now just support linux
+CMD="$CMD --build-arg goos=linux"
+
+CMD="$CMD --build-arg goarch=$(goarch $ARCH)"
+CMD="$CMD --build-arg goarm=$(goarm $ARCH)"
 
 # Upload a tar file as part of the build
 if [ -n "${UPLOAD_CRED}" -a -n "${UPLOAD_PATH}" ]
@@ -63,4 +41,4 @@ fi
 
 CMD="$CMD ."
 
-$CMD
+execute $CMD

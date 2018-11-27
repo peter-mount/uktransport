@@ -1,6 +1,13 @@
 // Build properties
 properties([
-  buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')),
+  buildDiscarder(
+    logRotator(
+      artifactDaysToKeepStr: '',
+      artifactNumToKeepStr: '',
+      daysToKeepStr: '',
+      numToKeepStr: '10'
+    )
+  ),
   disableConcurrentBuilds(),
   disableResume(),
   pipelineTriggers([
@@ -8,75 +15,43 @@ properties([
   ])
 ])
 
-// Repository name use, must end with / or be '' for none
+// Repository name use, must end with / or be '' for none.
+// Setting this to '' will also disable any pushing
 repository= 'area51/'
-// Disable deployment until refactor is complete
-//repository=''
 
-// image prefix
+// image prefix - project specific
 imagePrefix = 'uktransport'
 
-// The image version, master branch is latest in docker
+# The image tag (i.e. repository/image but no version)
+imageTag=repository + imagePrefix
+
+// The architectures to build, in format recognised by docker
+architectures = [ 'amd64', 'arm64v8' ]
+
+// The image version based on the branch name - master branch is latest in docker
 version=BRANCH_NAME
 if( version == 'master' ) {
   version = 'latest'
 }
 
-// The architectures to build, in format recognised by docker
-architectures = [ 'amd64', 'arm64v8' ]
-
-// The docker image name
-// architecture can be '' for multiarch images
-def dockerImage = {
-  architecture -> repository + imagePrefix +
-    ':' +
-    ( architecture=='' ? '' : (architecture + '-') ) +
-    version
+# Push an image if we have a repository set
+def pushImage = {
+  tag -> if( repository != '' ) {
+    sh 'docker push ' + tag
+  }
 }
-
-// The multi arch image name
-multiImage = repository + imagePrefix + ':' + version
 
 // Build a service for a specific architecture
 def buildArch = {
-  nodetag, architecture ->
-    node( nodetag ) {
-      stage( "docker" ) {
-        checkout scm
+  nodetag, architecture -> node( nodetag ) {
+    stage( "docker" ) {
+      checkout scm
 
-        sh './build.sh ' +
-          dockerImage( architecture ) +
-          ' ' + architecture +
-          ' ' + version
+      sh './build.sh ' + imageTag + ' ' + architecture + ' ' + version
 
-        if( repository != '' ) {
-          // Push all built images relevant docker repository
-          sh 'docker push ' + dockerImage( architecture )
-        } // repository != ''
-      }
+      pushImage( imageTag + ':' + architecture + '-' + version )
     }
-}
-
-manifests = architectures.collect { architecture -> dockerImage( architecture ) }
-manifests = manifests.join(' ')
-
-// Deploy multi-arch image for a service
-def multiArchService = {
-  tmp ->
-    // Create/amend the manifest with our architectures
-    sh 'docker manifest create -a ' + multiImage + ' ' + manifests
-
-    // For each architecture annotate them to be correct
-    architectures.each {
-      architecture -> sh 'docker manifest annotate' +
-        ' --os linux' +
-        ' --arch ' + goarch( architecture ) +
-        ' ' + multiImage +
-        ' ' + dockerImage( architecture )
-    }
-
-    // Publish the manifest
-    sh 'docker manifest push -p ' + multiImage
+  }
 }
 
 // Build on each platform
@@ -93,7 +68,13 @@ parallel (
 if( repository != '' ) {
   node( 'AMD64' ) {
     stage( "Multiarch Image" ) {
-      multiArchService( '' )
+
+      sh './multiarch.sh' +
+        ' ' + imageTag +
+        ' ' + version +
+        ' ' + architectures.join(' ')
+
+      pushImage( imageTag + ':' + version )
     }
   }
 }
