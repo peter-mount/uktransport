@@ -3,7 +3,7 @@
 function execute() {
   CMD=$@
   echo $CMD
-  #$CMD || exit $?
+  $CMD || exit $?
 }
 
 # Resolve the goarch for the architecture
