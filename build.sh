@@ -44,13 +44,23 @@ GOOS=linux
 # The actual image being built
 TAG=${IMAGE}:${ARCH}-${VERSION}
 
-echo "Building $SERVICE image $TAG on $ARCH"
+echo "Building $SERVICE image $IMAGE on $ARCH"
 
-docker build \
-  --force-rm=true \
-  -t ${TAG} \
-  --build-arg arch=${ARCH} \
-  --build-arg goos=${GOOS} \
-  --build-arg goarch=${GOARCH} \
-  --build-arg goarm=${GOARM} \
-  .
+CMD="docker build --force-rm=true"
+CMD="$CMD -t ${IMAGE}"
+
+CMD="$CMD --build-arg arch=${ARCH}"
+CMD="$CMD --build-arg goos=${GOOS}"
+CMD="$CMD --build-arg goarch=${GOARCH}"
+CMD="$CMD --build-arg goarm=${GOARM}"
+
+# Upload a tar file as part of the build
+if [ -n "${UPLOAD_CRED}" -a -n "${UPLOAD_PATH}" ]
+then
+  CMD="$CMD --build-arg uploadCred=${UPLOAD_CRED}"
+  CMD="$CMD --build-arg uploadPath=${UPLOAD_PATH}"
+fi
+
+CMD="$CMD ."
+
+$CMD

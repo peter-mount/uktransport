@@ -80,6 +80,17 @@ COPY --from=area51/nrod-cif:latest /bin/cifretrieve /dest/bin/
 COPY --from=area51/dataretriever:latest /usr/local/bin/dataretriever /dest/bin/
 
 # ============================================================
+# Optional stage, upload the binaries as a tar file
+FROM bins AS upload
+ARG uploadPath=
+ARG uploadCred=
+RUN if [ -n "${uploadCred}" -a -n "${uploadPath}" ] ;\
+    then \
+      cd /dest/bin; tar cvzpf /tmp/uktransport.tgz * && \
+      curl -u ${uploadCred} --upload-file /tmp/uktransport.tgz ${uploadPath}; \
+    fi
+
+# ============================================================
 # Finally build the final runtime container
 FROM alpine
 
