@@ -66,7 +66,7 @@ modules.each {
               sh './build.sh ' + imageTag + ' ' + arch + ' ' + version + ' ' + module
 
               if( repository != '' ) {
-                sh 'docker push ' + imageTag + ':' + ( module != 'Build' ? ( '-' + module ) : '' ) + arch + '-' + version
+                sh 'docker push ' + imageTag + ':' + ( module != 'Build' ? ( module + '-' ) : '' ) + arch + '-' + version
               }
             }
           }
@@ -87,6 +87,8 @@ if( repository != '' ) {
       builders[mod] = {
         node( 'AMD64' ) {
           stage( mod ) {
+            checkout scm
+
             sh './multiarch.sh' +
               ' ' + imageTag +
               ' ' + version +

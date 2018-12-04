@@ -33,22 +33,42 @@ fi
 . functions.sh
 
 CMD="docker manifest create -a ${MULTIIMAGE}"
-for arch in $@
+for ARCH in $@
 do
-  CMD="$CMD $(dockerImage $arch $MODULE)"
+  if [ "$MODULE" = "Build" ]
+  then
+    TAG="${IMAGE}:${ARCH}-${VERSION}"
+  else
+    TAG="${IMAGE}:${MODULE}-${ARCH}-${VERSION}"
+  fi
+
+  CMD="$CMD $TAG"
 done
 execute $CMD
 
-for arch in $@
+for ARCH in $@
 do
+  if [ "$MODULE" = "Build" ]
+  then
+    TAG="${IMAGE}:${ARCH}-${VERSION}"
+  else
+    TAG="${IMAGE}:${MODULE}-${ARCH}-${VERSION}"
+  fi
+
   # ensure this node has the latest image for this architecture
-  execute "docker pull $(dockerImage $arch)"
+  execute "docker pull ${TAG}"
 
   CMD="docker manifest annotate"
   CMD="$CMD --os linux"
-  CMD="$CMD --arch $(goarch $arch)"
-  CMD="$CMD $MULTIIMAGE"
-  CMD="$CMD $(dockerImage $arch $module)"
+  CMD="$CMD --arch $(goarch $ARCH)"
+
+  if [ "$(goarch $ARCH)" = "arm" ]
+  then
+    CMD="$CMD --variant v$(goarm $ARCH)"
+  fi
+
+  CMD="$CMD $MULTIIMAGE $TAG"
+
   execute $CMD
 done
 
