@@ -8,6 +8,8 @@ We use PostGIS rather than plain PostgreSQL as some of this data is geographic i
 
 Instructions on how to use this image will appear in the wiki.
 
+Currently this image supports the amd64 & arm64v8 architectures with arm32v7 (a.k.a. Raspberry PI 3B, 3B+ & 3A) in the near future once the dependent projects are updated to support that architecture.
+
 ## Data retrieval commands
 
 ### cif
@@ -39,3 +41,7 @@ This is from the [dataretriever](https://github.com/peter-mount/dataretriever) p
 It currently has two modes of operation:
 * Retrieve via http/https at regular intervals data and submit the response as a message.
 * Connect to a remote message broker using Stomp and submit messages to RabbitMQ. For Rail open data this suppots the NROD feed from Network Rail but *not* the Darwin Push Port feed.
+
+### publishmq
+
+publishmq is a utility currently being written (so not yet usable) to parse archived logs taken from the open data feeds and resubmit them to a RabbitMQ instance. It's mainly for use in testing the code that parses the data feeds.

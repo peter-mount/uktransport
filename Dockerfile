@@ -44,6 +44,7 @@ WORKDIR /go/src/github.com/peter-mount/uktransport
 ADD lib/ lib/
 ADD naptanimport/ naptanimport/
 ADD nptgimport/ nptgimport/
+ADD publishmq/ publishmq/
 ADD sql/ sql/
 
 # Import sql so we can build as needed
@@ -59,7 +60,7 @@ ARG goarm
 
 # Build the microservice.
 # NB: CGO_ENABLED=0 forces a static build
-RUN for bin in naptanimport nptgimport; \
+RUN for bin in naptanimport nptgimport publishmq; \
     do \
       echo "Building ${bin}"; \
       CGO_ENABLED=0 \
