@@ -8,7 +8,7 @@ We use PostGIS rather than plain PostgreSQL as some of this data is geographic i
 
 Instructions on how to use this image will appear in the wiki.
 
-Currently this image supports the amd64 & arm64v8 architectures with arm32v7 (a.k.a. Raspberry PI 3B, 3B+ & 3A) in the near future once the dependent projects are updated to support that architecture.
+Currently this image supports the amd64, arm64v8 & arm32v7 (a.k.a. Raspberry PI 3B, 3B+ & 3A) architectures.
 
 ## Data retrieval commands
 
