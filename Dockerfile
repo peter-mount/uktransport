@@ -30,17 +30,21 @@ RUN apk add --no-cache \
 # This stage installs the required libraries
 FROM golang as build
 
-RUN go get -v \
-      github.com/lib/pq \
-      github.com/peter-mount/golib/... \
-      github.com/peter-mount/goxml2json \
-      github.com/peter-mount/sortfold
+WORKDIR /work
+ADD go.mod .
+RUN go mod download
+
+#RUN go get -v \
+#      github.com/lib/pq \
+#      github.com/peter-mount/golib/... \
+#      github.com/peter-mount/goxml2json \
+#      github.com/peter-mount/sortfold
 
 # ============================================================
 # This stage contains the sources.
 # It also generates any .go files, e.g. the sql
 FROM build as source
-WORKDIR /go/src/github.com/peter-mount/uktransport
+WORKDIR /work
 ADD lib/ lib/
 ADD naptanimport/ naptanimport/
 ADD nptgimport/ nptgimport/
@@ -68,7 +72,7 @@ RUN for bin in naptanimport nptgimport publishmq; \
       GOARCH=${goarch} \
       GOARM=${goarm} \
       go build -o /dest/bin/${bin} \
-        github.com/peter-mount/uktransport/${bin}/bin; \
+        ./${bin}/bin; \
     done
 
 # ============================================================
