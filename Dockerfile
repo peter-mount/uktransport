@@ -20,8 +20,10 @@ RUN apk add --no-cache \
       curl \
       git \
       tzdata \
-      zip &&\
-    go get -v github.com/kevinburke/go-bindata &&\
+      zip
+
+# Fetch the go-bindata utility
+RUN go get -v github.com/kevinburke/go-bindata &&\
     go build -o /usr/local/bin/go-bindata \
       github.com/kevinburke/go-bindata/go-bindata &&\
     mkdir -p /dest/bin
@@ -33,12 +35,6 @@ FROM golang as build
 WORKDIR /work
 ADD go.mod .
 RUN go mod download
-
-#RUN go get -v \
-#      github.com/lib/pq \
-#      github.com/peter-mount/golib/... \
-#      github.com/peter-mount/goxml2json \
-#      github.com/peter-mount/sortfold
 
 # ============================================================
 # This stage contains the sources.
@@ -77,7 +73,7 @@ RUN for bin in naptanimport nptgimport publishmq; \
 
 # ============================================================
 # This stage retrieves prebuilt binaries from other containers
-# That we want to include in this image
+# that we want to include in this image
 FROM compiler as bins
 
 # cifimport

@@ -8,7 +8,6 @@ import (
   "log"
   "path/filepath"
   "os"
-  "log"
 )
 
 type FileReader struct {
@@ -126,7 +125,7 @@ func (a *FileReader) ReadFile( s string ) error {
       } )
   }
 
-  log.Println( "Reading", f )
+  log.Println( "Reading", fi.Name() )
 
   // Read the file
   b, err := ioutil.ReadAll( f )
