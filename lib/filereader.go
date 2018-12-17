@@ -5,6 +5,7 @@ import (
   "flag"
   "github.com/peter-mount/golib/kernel"
   "io/ioutil"
+  "log"
   "path/filepath"
   "os"
   "log"
@@ -23,7 +24,7 @@ type FileReader struct {
   pattern          *string
 
   parser            FileParser
-  recordProcessor   RecordProcessor
+  RecordProcessor   RecordProcessor
 }
 
 func (a *FileReader) Name() string {
@@ -73,10 +74,18 @@ func (a *FileReader) PostInit() error {
     return errors.New( "One of -dos, -rs, -stxetx or -unix is required" )
   }
 
-  a.recordProcessor = func(b []byte ) error {
-    s := string(b[:])
-    log.Println( s )
-    return nil
+  return nil
+}
+
+func (a *FileReader) Start() error {
+
+  // Default to write records to the console is not defined
+  if a.RecordProcessor == nil {
+    a.RecordProcessor = func(b []byte ) error {
+      s := string(b[:])
+      log.Println( s )
+      return nil
+    }
   }
 
   return nil
@@ -117,11 +126,13 @@ func (a *FileReader) ReadFile( s string ) error {
       } )
   }
 
+  log.Println( "Reading", f )
+
   // Read the file
   b, err := ioutil.ReadAll( f )
   if err != nil {
     return err
   }
 
-  return a.parser.Parse( b, a.recordProcessor )
+  return a.parser.Parse( b, a.RecordProcessor )
 }
