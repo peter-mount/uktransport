@@ -35,7 +35,6 @@ FROM build as source
 WORKDIR /work
 
 # This stage installs the required libraries
-FROM golang as build
 ADD go.mod .
 RUN go mod download
 
