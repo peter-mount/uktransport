@@ -15,7 +15,7 @@ ARG goos=linux
 # ============================================================
 # The base golang environment with curl, git, uptodate tzdata
 # and go-bindata installed
-FROM golang:alpine as golang
+FROM golang:alpine as build
 RUN apk add --no-cache \
       curl \
       git \
@@ -29,18 +29,16 @@ RUN go get -v github.com/kevinburke/go-bindata &&\
     mkdir -p /dest/bin
 
 # ============================================================
-# This stage installs the required libraries
-FROM golang as build
-
-WORKDIR /work
-ADD go.mod .
-RUN go mod download
-
-# ============================================================
 # This stage contains the sources.
 # It also generates any .go files, e.g. the sql
 FROM build as source
 WORKDIR /work
+
+# This stage installs the required libraries
+FROM golang as build
+ADD go.mod .
+RUN go mod download
+
 ADD lib/ lib/
 ADD naptanimport/ naptanimport/
 ADD nptgimport/ nptgimport/
