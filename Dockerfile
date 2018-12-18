@@ -15,7 +15,7 @@ ARG goos=linux
 # ============================================================
 # The base golang environment with curl, git, uptodate tzdata
 # and go-bindata installed
-FROM golang:alpine as build
+FROM golang:1.11.3-alpine as build
 RUN apk add --no-cache \
       curl \
       git \
