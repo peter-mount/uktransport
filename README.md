@@ -45,9 +45,3 @@ It currently has two modes of operation:
 ### publishmq
 
 publishmq is a utility currently being written (so not yet usable) to parse archived logs taken from the open data feeds and resubmit them to a RabbitMQ instance. It's mainly for use in testing the code that parses the data feeds.
-
-### rabtap
-
-rabtap is a Swiss army knife for RabbitMQ. Tap/Pub/Sub messages, create/delete/bind queues and exchanges, inspect broker.
-
-Full documentation is in it's repository: https://github.com/jandelgado/rabtap
