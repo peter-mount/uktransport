@@ -42,6 +42,10 @@ It currently has two modes of operation:
 * Retrieve via http/https at regular intervals data and submit the response as a message.
 * Connect to a remote message broker using Stomp and submit messages to RabbitMQ. For Rail open data this suppots the NROD feed from Network Rail but *not* the Darwin Push Port feed.
 
+### dbrest
+
+dbrest is a standalone utility that allows for functions within a PostgreSQL database to be exposed as a REST service.
+
 ### publishmq
 
 publishmq is a utility currently being written (so not yet usable) to parse archived logs taken from the open data feeds and resubmit them to a RabbitMQ instance. It's mainly for use in testing the code that parses the data feeds.

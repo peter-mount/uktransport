@@ -15,7 +15,7 @@ ARG goos=linux
 # ============================================================
 # The base golang environment with curl, git, uptodate tzdata
 # and go-bindata installed
-FROM golang:1.11.3-alpine as build
+FROM golang:1.12.6-alpine as build
 RUN apk add --no-cache \
       curl \
       git \
@@ -47,6 +47,8 @@ ADD sql/ sql/
 # Import sql so we can build as needed
 RUN go-bindata -o lib/sqlassets.go -pkg lib sql/
 
+ADD dbrest/ dbrest/
+
 # ============================================================
 # Now compile our binaries
 FROM source as compiler
@@ -57,7 +59,7 @@ ARG goarm
 
 # Build the microservice.
 # NB: CGO_ENABLED=0 forces a static build
-RUN for bin in naptanimport nptgimport publishmq; \
+RUN for bin in dbrest naptanimport nptgimport publishmq; \
     do \
       echo "Building ${bin}"; \
       CGO_ENABLED=0 \
