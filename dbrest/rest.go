@@ -3,7 +3,6 @@ package dbrest
 import (
 	"database/sql"
 	"fmt"
-	"github.com/peter-mount/golib/kernel/db"
 	"github.com/peter-mount/golib/rest"
 	"io/ioutil"
 	"log"
@@ -31,10 +30,10 @@ type RestHandler struct {
 	Headers map[string]string `yaml:"headers"`
 	// Prepared statement
 	sql string
-	db  *db.DBService
+	db  *DB
 }
 
-func (handler *RestHandler) init(db *db.DBService, server *rest.Server) {
+func (handler *RestHandler) init(prefix string, db *DB, server *rest.Server) {
 	if handler.Method == "" {
 		handler.Method = "GET"
 	} else {
@@ -49,9 +48,20 @@ func (handler *RestHandler) init(db *db.DBService, server *rest.Server) {
 	}
 
 	handler.sql = "SELECT " + handler.Function + "(" + strings.Join(params, ",") + ")"
-	log.Println("Prepare:", handler.sql)
 
-	server.Handle(handler.Path, handler.handleRequest).Methods(handler.Method)
+	path := handler.Path
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	if prefix != "" {
+		path = prefix + path
+		if !strings.HasPrefix(path, "/") {
+			path = "/" + path
+		}
+	}
+
+	log.Println(path, handler.sql)
+	server.Handle(path, handler.handleRequest).Methods(handler.Method)
 }
 
 const (
