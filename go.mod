@@ -15,6 +15,6 @@ require (
 	github.com/peter-mount/go.uuid v1.2.0 // indirect
 	github.com/peter-mount/sortfold v0.2.1 // indirect
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94 // indirect
-	golang.org/x/net v0.0.0-20190613194153-d28f0bde5980 // indirect
-	golang.org/x/text v0.3.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 )
